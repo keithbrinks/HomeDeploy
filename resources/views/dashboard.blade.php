@@ -15,6 +15,13 @@
         </a>
     </div>
 
+    <!-- Server Metrics -->
+    <div class="mb-8">
+        <h2 class="text-lg font-semibold text-white mb-4">Server Resources</h2>
+        <x-server-metrics />
+    </div>
+
+    <h2 class="text-lg font-semibold text-white mb-4">Your Sites</h2>
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         @forelse ($sites as $site)
             <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden hover:border-slate-700 transition-colors">

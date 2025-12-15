@@ -7,6 +7,7 @@ namespace App\Domains\Sites;
 use App\Domains\Deployments\Deployment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Site extends Model
 {
@@ -47,5 +48,10 @@ class Site extends Model
     public function environmentVariables(): HasMany
     {
         return $this->hasMany(EnvironmentVariable::class);
+    }
+    
+    public function cloudflareConfig(): HasOne
+    {
+        return $this->hasOne(\App\Domains\Cloudflare\CloudflareConfig::class);
     }
 }

@@ -55,6 +55,9 @@
                             <a href="{{ route('services.index') }}" class="{{ request()->routeIs('services.*') ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white hover:border-slate-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                                 Services
                             </a>
+                            <a href="{{ route('system.update') }}" class="{{ request()->routeIs('system.*') ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white hover:border-slate-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
+                                System
+                            </a>
                         </div>
                     </div>
                     <div class="flex items-center">
