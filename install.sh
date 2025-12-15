@@ -34,7 +34,34 @@ if ! command -v composer &> /dev/null; then
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 fi
 
-# 2. Setup Application
+# 2. Secure MySQL
+echo -e "${BLUE}Securing MySQL...${NC}"
+MYSQL_ROOT_PASSWORD=$(openssl rand -base64 20 | tr -d "=+/" | cut -c1-25)
+
+# Set root password and secure installation
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MYSQL_ROOT_PASSWORD}';" 2>/dev/null || true
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "DELETE FROM mysql.user WHERE User='';" 2>/dev/null || true
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" 2>/dev/null || true
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "DROP DATABASE IF EXISTS test;" 2>/dev/null || true
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" 2>/dev/null || true
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "FLUSH PRIVILEGES;" 2>/dev/null || true
+
+# Save MySQL credentials
+MYSQL_CRED_FILE="/root/mysql-root-credentials.txt"
+cat > "$MYSQL_CRED_FILE" <<EOF
+MySQL Root Credentials
+======================
+Username: root
+Password: $MYSQL_ROOT_PASSWORD
+Host: localhost
+
+IMPORTANT: HomeDeploy uses these credentials to create databases for deployed apps.
+Keep this file secure and delete after saving credentials elsewhere.
+EOF
+chmod 600 "$MYSQL_CRED_FILE"
+echo -e "${GREEN}MySQL secured. Credentials saved to $MYSQL_CRED_FILE${NC}"
+
+# 3. Setup Application
 INSTALL_DIR="/opt/homedeploy"
 REPO_URL="https://github.com/keithbrinks/HomeDeploy.git"
 
@@ -67,7 +94,7 @@ if [ ! -f .env ]; then
     cp .env.example .env
     php artisan key:generate
     
-    # Configure SQLite
+    # Configure SQLite for HomeDeploy's database
     touch database/database.sqlite
     sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env
     sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=\/opt\/homedeploy\/database\/database.sqlite/' .env
@@ -76,6 +103,11 @@ if [ ! -f .env ]; then
     sed -i '/DB_PORT/d' .env
     sed -i '/DB_USERNAME/d' .env
     sed -i '/DB_PASSWORD/d' .env
+    
+    # Add MySQL root password for app database creation
+    echo "" >> .env
+    echo "# MySQL credentials for creating databases for deployed apps" >> .env
+    echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" >> .env
 fi
 
 # Run Migrations
@@ -129,7 +161,8 @@ systemctl enable homedeploy
 systemctl enable homedeploy-queue
 systemctl restart homedeploy
 systemctl restart homedeploy-queue
-
+MySQL Root Password: $MYSQL_CRED_FILE"
+echo -e "Please save these credentials securely
 echo -e "${GREEN}Installation Complete!${NC}"
 echo -e "Access at: http://localhost:8080"
 echo -e "Email: admin@localhost"
