@@ -36,7 +36,7 @@ fi
 
 # 2. Setup Application
 INSTALL_DIR="/opt/homedeploy"
-REPO_URL="https://github.com/keithbrinks/homedeploy.git" # Placeholder
+REPO_URL="https://github.com/keithbrinks/HomeDeploy.git"
 
 if [ -d "$INSTALL_DIR" ]; then
     echo -e "${BLUE}Updating existing installation...${NC}"
