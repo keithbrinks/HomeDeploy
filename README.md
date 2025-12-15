@@ -47,6 +47,32 @@ To enable repository browsing and deployments, you need to create a GitHub OAuth
    - **Callback URL**: `https://manager.yourdomain.com/auth/github/callback`
 3. Add the Client ID and Secret to your `.env` file.
 
+## Local Development (Laravel Herd)
+
+You can run HomeDeploy locally using Laravel Herd for testing and development.
+
+1. **Database Setup**:
+   Ensure your `.env` is configured for SQLite (default) and the database file exists:
+   ```bash
+   touch database/database.sqlite
+   php artisan migrate
+   ```
+
+2. **Create Admin User**:
+   Create a user to log in with:
+   ```bash
+   php artisan user:create --name="Admin" --email="admin@localhost" --password="password"
+   ```
+
+3. **Access the App**:
+   Open `http://homedeploy.test` (or your Herd domain) and login.
+
+4. **Testing Deployments**:
+   To test the deployment engine locally without messing up your system:
+   - Create a new site with a public repo (e.g., `https://github.com/laravel/laravel.git`).
+   - Set the **Deployment Path** to a local writable directory, e.g., `/Users/yourname/Herd/HomeDeploy/storage/app/test-deploy`.
+   - Click **Deploy Now** to see the process in action.
+
 ## License
 
 HomeDeploy is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
