@@ -10,7 +10,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Deployment extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'site_id',
+        'status',
+        'deployed_by',
+        'commit_hash',
+        'commit_message',
+        'output',
+        'started_at',
+        'completed_at',
+    ];
 
     protected $casts = [
         'started_at' => 'datetime',

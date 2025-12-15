@@ -1,6 +1,15 @@
 <x-layouts.app>
+    <x-flash-messages />
+    
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+        <div>
+            <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+            @if(!Auth::user()->github_token)
+                <p class="text-sm text-slate-400 mt-1">
+                    <a href="{{ route('auth.github') }}" class="text-indigo-400 hover:text-indigo-300">Connect GitHub</a> to browse repositories
+                </p>
+            @endif
+        </div>
         <a href="{{ route('sites.create') }}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
             New Site
         </a>
@@ -43,7 +52,7 @@
                 <h3 class="mt-2 text-sm font-medium text-white">No sites deployed</h3>
                 <p class="mt-1 text-sm text-slate-400">Get started by creating a new deployment.</p>
                 <div class="mt-6">
-                    <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <a href="{{ route('sites.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                         </svg>

@@ -11,7 +11,9 @@ class DashboardController extends Controller
 {
     public function __invoke(): View
     {
-        $sites = Site::with('deployments')->latest()->get();
+        $sites = Site::with(['deployments' => function ($query) {
+            $query->latest()->limit(1);
+        }])->latest()->get();
 
         return view('dashboard', [
             'sites' => $sites,

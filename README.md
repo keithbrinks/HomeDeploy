@@ -41,11 +41,24 @@ This script will:
 
 ### GitHub OAuth
 To enable repository browsing and deployments, you need to create a GitHub OAuth App:
-1. Go to GitHub Developer Settings > OAuth Apps.
-2. Create a new app.
-   - **Homepage URL**: `https://manager.yourdomain.com` (or `http://localhost:8080` if tunneling)
-   - **Callback URL**: `https://manager.yourdomain.com/auth/github/callback`
-3. Add the Client ID and Secret to your `.env` file.
+
+1. Go to [GitHub Developer Settings > OAuth Apps](https://github.com/settings/developers)
+2. Click **"New OAuth App"**
+3. Fill in the application details:
+   - **Application name**: `HomeDeploy` (or your preferred name)
+   - **Homepage URL**: `http://homedeploy.test` (for local dev) or `https://yourdomain.com` (for production)
+   - **Authorization callback URL**: `http://homedeploy.test/auth/github/callback` (for local) or `https://yourdomain.com/auth/github/callback` (for production)
+4. Click **"Register application"**
+5. Copy the **Client ID** and generate a new **Client Secret**
+6. Add these to your `.env` file:
+   ```env
+   GITHUB_CLIENT_ID=your_client_id_here
+   GITHUB_CLIENT_SECRET=your_client_secret_here
+   GITHUB_REDIRECT_URI=http://homedeploy.test/auth/github/callback
+   ```
+7. Restart your local server or run `php artisan config:clear` on production
+
+**Note:** Without GitHub OAuth configured, you can still create sites manually by entering repository URLs directly.
 
 ## Local Development (Laravel Herd)
 

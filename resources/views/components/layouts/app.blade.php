@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'HomeDeploy') }}</title>
 
     <!-- Fonts -->
@@ -48,15 +49,21 @@
                             </a>
                         </div>
                         <div class="hidden sm:-my-px sm:ml-10 sm:flex sm:space-x-8">
-                            <a href="{{ route('dashboard') }}" class="border-indigo-500 text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white hover:border-slate-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
                                 Dashboard
                             </a>
-                            <!-- Add more links here -->
+                            <a href="{{ route('services.index') }}" class="{{ request()->routeIs('services.*') ? 'border-indigo-500 text-white' : 'border-transparent text-slate-400 hover:text-white hover:border-slate-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">
+                                Services
+                            </a>
                         </div>
                     </div>
                     <div class="flex items-center">
                         @auth
                             <span class="text-sm text-slate-400 mr-4">{{ Auth::user()->name }}</span>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="text-sm text-slate-400 hover:text-white">Logout</button>
+                            </form>
                         @endauth
                     </div>
                 </div>

@@ -14,6 +14,13 @@ class GithubController extends Controller
 {
     public function redirect(): RedirectResponse
     {
+        // Check if GitHub OAuth is configured
+        if (!config('services.github.client_id') || !config('services.github.client_secret')) {
+            return redirect()
+                ->route('dashboard')
+                ->with('error', 'GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in your .env file.');
+        }
+
         return Socialite::driver('github')
             ->scopes(['repo', 'read:user'])
             ->redirect();

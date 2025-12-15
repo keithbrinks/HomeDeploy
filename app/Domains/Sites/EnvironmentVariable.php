@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EnvironmentVariable extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'site_id',
+        'key',
+        'value',
+    ];
+
+    protected $hidden = [
+        'value',
+    ];
 
     protected $casts = [
         'value' => 'encrypted',

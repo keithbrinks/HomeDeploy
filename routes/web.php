@@ -1,14 +1,31 @@
 <?php
 
 use App\Http\Controllers\Auth\GithubController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabasesController;
+use App\Http\Controllers\DeploymentLogsController;
 use App\Http\Controllers\DeploymentsController;
+use App\Http\Controllers\EnvironmentVariablesController;
+use App\Http\Controllers\NginxController;
+use App\Http\Controllers\RollbackController;
+use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\SitesController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
+
+// Webhook endpoint (no auth middleware, with rate limiting)
+Route::post('/webhook/{site}', [WebhookController::class, 'handle'])
+    ->middleware('throttle:60,1')
+    ->name('webhook.handle');
+
+Route::get('/login', [LoginController::class, 'create'])->name('login');
+Route::post('/login', [LoginController::class, 'store']);
+Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
@@ -16,8 +33,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sites/create', [SitesController::class, 'create'])->name('sites.create');
     Route::post('/sites', [SitesController::class, 'store'])->name('sites.store');
     Route::get('/sites/{site}', [SitesController::class, 'show'])->name('sites.show');
+    Route::get('/api/github/branches', [SitesController::class, 'branches'])->name('api.github.branches');
     
     Route::post('/sites/{site}/deploy', [DeploymentsController::class, 'store'])->name('sites.deploy');
+    Route::post('/deployments/{deployment}/rollback', [RollbackController::class, 'store'])->name('deployments.rollback');
+    Route::post('/sites/{site}/nginx', [NginxController::class, 'generate'])->name('sites.nginx.generate');
+    Route::post('/sites/{site}/webhook/regenerate', [WebhookController::class, 'regenerateSecret'])->name('sites.webhook.regenerate');
+    Route::post('/sites/{site}/env', [EnvironmentVariablesController::class, 'store'])->name('sites.env.store');
+    Route::delete('/sites/{site}/env/{environmentVariable}', [EnvironmentVariablesController::class, 'destroy'])->name('sites.env.destroy');
+    Route::get('/api/deployments/{deployment}/logs', [DeploymentLogsController::class, 'show'])->name('api.deployments.logs');
+    
+    Route::post('/sites/{site}/database', [DatabasesController::class, 'store'])->name('sites.database.create');
+    Route::delete('/sites/{site}/database', [DatabasesController::class, 'destroy'])->name('sites.database.destroy');
+    
+    Route::get('/services', [ServicesController::class, 'index'])->name('services.index');
+    Route::post('/services/{service}/restart', [ServicesController::class, 'restart'])->name('services.restart');
+    Route::get('/services/{service}/status', [ServicesController::class, 'status'])->name('services.status');
 
     Route::get('/auth/github', [GithubController::class, 'redirect'])->name('auth.github');
     Route::get('/auth/github/callback', [GithubController::class, 'callback'])->name('auth.github.callback');

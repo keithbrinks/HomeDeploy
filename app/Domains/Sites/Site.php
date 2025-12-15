@@ -10,11 +10,33 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Site extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'domain',
+        'repo_url',
+        'branch',
+        'deploy_path',
+        'port',
+        'github_token',
+        'webhook_secret',
+        'database_name',
+        'database_username',
+        'database_password',
+        'build_commands',
+    ];
+
+    protected $hidden = [
+        'github_token',
+        'webhook_secret',
+        'database_password',
+    ];
 
     protected $casts = [
         'build_commands' => 'array',
         'port' => 'integer',
+        'github_token' => 'encrypted',
+        'webhook_secret' => 'encrypted',
+        'database_password' => 'encrypted',
     ];
 
     public function deployments(): HasMany
