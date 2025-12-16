@@ -163,13 +163,37 @@ systemctl enable homedeploy-queue
 systemctl restart homedeploy
 systemctl restart homedeploy-queue
 
+# Configure Nginx
+echo -e "${BLUE}Configuring Nginx...${NC}"
+cat > /etc/nginx/sites-available/homedeploy <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_redirect off;
+    }
+}
+EOF
+
+# Remove default site and enable HomeDeploy
+rm -f /etc/nginx/sites-enabled/default
+ln -sf /etc/nginx/sites-available/homedeploy /etc/nginx/sites-enabled/
+nginx -t && systemctl restart nginx
+
 echo ""
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}    Installation Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo -e "${BLUE}Access HomeDeploy:${NC}"
-echo -e "  URL: http://localhost:8080"
+echo -e "  URL: http://YOUR_SERVER_IP"
 echo ""
 echo -e "${BLUE}Admin Credentials:${NC}"
 echo -e "  Email:    admin@localhost"
