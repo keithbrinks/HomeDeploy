@@ -51,6 +51,13 @@ class RunDeploymentAction
             // Run build commands
             if ($site->build_commands) {
                 foreach ($site->build_commands as $command) {
+                    // Skip migrations if it's a migrate command and no database is configured
+                    if ($this->isMigrateCommand($command) && !$this->hasDatabaseConfigured($site, $path)) {
+                        $this->log($deployment, "Skipping migration: No database configured for this site.");
+                        $this->log($deployment, "Create a database and sync credentials to .env before running migrations.");
+                        continue;
+                    }
+                    
                     $this->runCommand($deployment, $command, $path);
                 }
             }
@@ -130,4 +137,23 @@ class RunDeploymentAction
         // Update the origin remote to use authenticated URL
         Process::path($path)->run("git remote set-url origin {$authenticatedUrl}");
     }
-}
+
+    private function isMigrateCommand(string $command): bool
+    {
+        return str_contains($command, 'artisan migrate');
+    }
+
+    private function hasDatabaseConfigured(object $site, string $path): bool
+    {
+        // Check if site has a database configured in HomeDeploy
+        if ($site->database_name) {
+            // Check if .env file has database credentials
+            $envPath = $path . '/.env';
+            if (file_exists($envPath)) {
+                $envContent = file_get_contents($envPath);
+                return str_contains($envContent, 'DB_DATABASE=' . $site->database_name);
+            }
+        }
+        
+        return false;
+    }
