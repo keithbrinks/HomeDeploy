@@ -199,15 +199,24 @@
                                 <p class="text-xs text-slate-400 mb-1">Username</p>
                                 <p class="text-sm font-mono text-white">{{ $site->database_username }}</p>
                             </div>
-                            <form action="{{ route('sites.database.destroy', $site) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" 
-                                        onclick="return confirm('This will permanently delete the database and all its data. Continue?')"
-                                        class="w-full bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                                    Drop Database
-                                </button>
-                            </form>
+                            <div class="flex gap-2">
+                                <form action="{{ route('sites.database.sync', $site) }}" method="POST" class="flex-1">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Sync to .env
+                                    </button>
+                                </form>
+                                <form action="{{ route('sites.database.destroy', $site) }}" method="POST" class="flex-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" 
+                                            onclick="return confirm('This will permanently delete the database and all its data. Continue?')"
+                                            class="w-full bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Drop Database
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     @else
                         <form action="{{ route('sites.database.create', $site) }}" method="POST">

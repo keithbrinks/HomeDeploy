@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     
     Route::post('/sites/{site}/database', [DatabasesController::class, 'store'])->name('sites.database.create');
     Route::delete('/sites/{site}/database', [DatabasesController::class, 'destroy'])->name('sites.database.destroy');
+    Route::post('/sites/{site}/database/sync', [DatabasesController::class, 'sync'])->name('sites.database.sync');
     
     Route::get('/sites/{site}/cloudflare', [CloudflareController::class, 'edit'])->name('cloudflare.edit');
     Route::post('/sites/{site}/cloudflare', [CloudflareController::class, 'store'])->name('cloudflare.store');

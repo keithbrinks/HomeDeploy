@@ -12,15 +12,14 @@ class GenerateNginxConfigAction
 {
     public function execute(Site $site): string
     {
-        $serverName = str_replace(['http://', 'https://'], '', $site->repo_url);
-        $serverName = parse_url('http://' . $serverName, PHP_URL_HOST) ?? 'localhost';
+        $serverName = $site->domain ?? "{$site->name}.local";
         $siteName = $site->name;
         
         $config = <<<NGINX
 server {
     listen 80;
     listen [::]:80;
-    server_name {$siteName}.local;
+    server_name {$serverName};
     root {$site->deploy_path}/public;
 
     add_header X-Frame-Options "SAMEORIGIN";

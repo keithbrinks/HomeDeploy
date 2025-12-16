@@ -6,6 +6,7 @@ use App\Domains\Deployments\Models\Deployment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Crypt;
 
 class Site extends Model
 {
@@ -26,5 +27,22 @@ class Site extends Model
     public function deployments(): HasMany
     {
         return $this->hasMany(Deployment::class);
+    }
+
+    public function getEnvFileContent(): ?string
+    {
+        $envPath = $this->deploy_path . '/.env';
+        if (file_exists($envPath)) {
+            return file_get_contents($envPath);
+        }
+        return null;
+    }
+
+    public function getDatabasePassword(): ?string
+    {
+        if ($this->database_password) {
+            return Crypt::decryptString($this->database_password);
+        }
+        return null;
     }
 }
