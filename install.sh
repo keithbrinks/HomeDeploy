@@ -13,6 +13,7 @@ echo -e "${BLUE}HomeDeploy Installer${NC}"
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
   echo -e "${RED}Please run as root${NC}"
+  echo -e "${YELLOW}Use: curl -sSL https://raw.githubusercontent.com/keithbrinks/HomeDeploy/main/install.sh | sudo bash${NC}"
   exit 1
 fi
 
