@@ -28,7 +28,7 @@ Create a dead-simple alternative to Laravel Forge/VitoDeploy that assumes it's r
 Run the following command on your fresh server as root:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/keithbrinks/HomeDeploy/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/keithbrinks/HomeDeploy/main/install.sh | sudo bash
 ```
 
 This script will:
