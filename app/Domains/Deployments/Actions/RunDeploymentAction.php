@@ -146,14 +146,22 @@ class RunDeploymentAction
     private function hasDatabaseConfigured(object $site, string $path): bool
     {
         // Check if site has a database configured in HomeDeploy
-        if ($site->database_name) {
-            // Check if .env file has database credentials
-            $envPath = $path . '/.env';
-            if (file_exists($envPath)) {
-                $envContent = file_get_contents($envPath);
-                return str_contains($envContent, 'DB_DATABASE=' . $site->database_name);
-            }
+        if (!$site->database_name) {
+            return false;
         }
+
+        // Check if .env file has MySQL database configured
+        $envPath = $path . '/.env';
+        if (!file_exists($envPath)) {
+            return false;
+        }
+
+        $envContent = file_get_contents($envPath);
         
-        return false;
-    }}
+        // Must have DB_CONNECTION=mysql AND matching database name
+        $hasMysql = preg_match('/^DB_CONNECTION=mysql/m', $envContent);
+        $hasDatabase = str_contains($envContent, 'DB_DATABASE=' . $site->database_name);
+        
+        return $hasMysql && $hasDatabase;
+    }
+}
