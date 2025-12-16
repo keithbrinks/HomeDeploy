@@ -191,5 +191,8 @@
                 </div>
             </div>
 
-    </div>
-</x-layouts.app>
+            <div class="flex justify-end">
+                <a href="{{ route('dashboard') }}" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium mr-3">Cancel</a>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium">Create Site</button>
+            </div>
+        </form>
