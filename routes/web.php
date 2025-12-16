@@ -75,6 +75,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
     Route::get('/settings/test-github', [SettingsController::class, 'testGithub'])->name('settings.test-github');
+    Route::post('/settings/regenerate-nginx', [SettingsController::class, 'regenerateNginx'])->name('settings.regenerate-nginx');
     Route::post('/system/update', [SystemUpdateController::class, 'update'])->name('system.update.perform');
 
     Route::get('/auth/github', [GithubController::class, 'redirect'])->name('auth.github');

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('server_ip')->nullable();
             $table->string('default_domain')->nullable();
             $table->string('local_domain_suffix')->default('.local');
+            $table->string('homedeploy_domain')->nullable();
             
             // Global Cloudflare Tunnel
             $table->text('cloudflare_tunnel_token')->nullable();

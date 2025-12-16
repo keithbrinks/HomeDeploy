@@ -17,6 +17,7 @@ class Settings extends Model
         'server_ip',
         'default_domain',
         'local_domain_suffix',
+        'homedeploy_domain',
         'cloudflare_tunnel_token',
         'cloudflare_tunnel_id',
         'cloudflare_tunnel_enabled',

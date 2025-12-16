@@ -190,6 +190,23 @@
                            placeholder=".local">
                     <p class="mt-1 text-xs text-slate-500">Suffix for local development domains (e.g., sitename.local)</p>
                 </div>
+
+                <!-- HomeDeploy Domain -->
+                <div>
+                    <label for="homedeploy_domain" class="block text-sm font-medium text-slate-300 mb-2">HomeDeploy Domain</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="homedeploy_domain" id="homedeploy_domain"
+                               value="{{ old('homedeploy_domain', $settings->homedeploy_domain) }}"
+                               class="flex-1 bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="homedeploy.local">
+                        <button type="button"
+                                onclick="if(confirm('Regenerate HomeDeploy Nginx config with this domain?')) { fetch('{{ route('settings.regenerate-nginx') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => location.reload()); }"
+                                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Update Nginx
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">Domain for accessing this HomeDeploy installation</p>
+                </div>
                 
                 <div class="flex justify-end pt-4">
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
