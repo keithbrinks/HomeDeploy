@@ -90,3 +90,5 @@ class Site extends Model
         }
         return null;
     }
+}
+
