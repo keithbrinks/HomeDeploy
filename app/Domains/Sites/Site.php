@@ -14,6 +14,7 @@ class Site extends Model
     protected $fillable = [
         'name',
         'domain',
+        'domain_strategy',
         'repo_url',
         'branch',
         'deploy_path',
@@ -65,4 +66,27 @@ class Site extends Model
         
         return file_get_contents($envPath);
     }
-}
+
+    public function getFullDomain(): string
+    {
+        // If domain is already set, use it
+        if ($this->domain) {
+            return 'http://' . $this->domain;
+        }
+        
+        // Otherwise generate from strategy
+        $settings = \App\Models\Settings::get();
+        return 'http://' . $settings->getSiteDomain(
+            $this->name,
+            $this->domain_strategy ?? 'ip',
+            null
+        );
+    }
+
+    public function getDatabasePassword(): ?string
+    {
+        if ($this->database_password) {
+            return \Illuminate\Support\Facades\Crypt::decryptString($this->database_password);
+        }
+        return null;
+    }
