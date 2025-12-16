@@ -52,6 +52,7 @@ class PerformUpdate
             // Run composer install
             $composer = Process::path($basePath)
                 ->timeout(300)
+                ->env(['HOME' => $basePath, 'COMPOSER_HOME' => storage_path('composer')])
                 ->run('composer install --no-dev --optimize-autoloader');
             
             if (!$composer->successful()) {
@@ -66,6 +67,7 @@ class PerformUpdate
             // Run migrations
             $migrate = Process::path($basePath)
                 ->timeout(120)
+                ->env(['HOME' => $basePath])
                 ->run('php artisan migrate --force');
             
             if (!$migrate->successful()) {
@@ -78,8 +80,8 @@ class PerformUpdate
             }
             
             // Clear and optimize cache
-            Process::path($basePath)->run('php artisan optimize:clear');
-            Process::path($basePath)->run('php artisan optimize');
+            Process::path($basePath)->env(['HOME' => $basePath])->run('php artisan optimize:clear');
+            Process::path($basePath)->env(['HOME' => $basePath])->run('php artisan optimize');
             
             $newCommit = trim(Process::path($basePath)->run('git rev-parse HEAD')->output());
             
