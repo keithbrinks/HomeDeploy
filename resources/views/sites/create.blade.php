@@ -117,10 +117,79 @@
                 <input type="text" name="deploy_path" id="deploy_path" x-ref="deployPathInput" required placeholder="/var/www/mysite" class="mt-1 block w-full rounded-md bg-slate-800 border-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
-            <div class="flex justify-end">
-                <a href="{{ route('dashboard') }}" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium mr-3">Cancel</a>
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium">Create Site</button>
+            <!-- Domain Configuration -->
+            <div x-data="{
+                strategy: 'ip',
+                customDomain: '',
+                siteName: '',
+                updatePreview() {
+                    this.siteName = $refs.nameInput?.value || 'sitename';
+                }
+            }" @input.window="updatePreview()">
+                <label class="block text-sm font-medium text-slate-300 mb-3">Domain Configuration</label>
+                
+                <div class="space-y-3">
+                    <!-- Server IP -->
+                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors" 
+                           :class="strategy === 'ip' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
+                        <input type="radio" name="domain_strategy" value="ip" x-model="strategy" class="mt-1 text-indigo-600">
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-white">Server IP</p>
+                            <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono">{{ $settings->server_ip ?: 'Set IP in Settings' }}</span></p>
+                        </div>
+                    </label>
+
+                    <!-- Subdomain -->
+                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
+                           :class="strategy === 'subdomain' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
+                        <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="mt-1 text-indigo-600" {{ $settings->default_domain ? '' : 'disabled' }}>
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-white">Subdomain</p>
+                            @if($settings->default_domain)
+                                <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}.{{ $settings->default_domain }}`"></span></p>
+                            @else
+                                <p class="text-xs text-amber-400 mt-1">Set default domain in Settings first</p>
+                            @endif
+                        </div>
+                    </label>
+
+                    <!-- Local Domain -->
+                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
+                           :class="strategy === 'local' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
+                        <input type="radio" name="domain_strategy" value="local" x-model="strategy" class="mt-1 text-indigo-600">
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-white">Local Domain</p>
+                            <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}{{ $settings->local_domain_suffix }}`"></span></p>
+                            <p class="text-xs text-slate-500 mt-1">Automatically adds /etc/hosts entry</p>
+                        </div>
+                    </label>
+
+                    <!-- Custom Domain -->
+                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
+                           :class="strategy === 'custom' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
+                        <input type="radio" name="domain_strategy" value="custom" x-model="strategy" class="mt-1 text-indigo-600">
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-white mb-2">Custom Domain</p>
+                            <input type="text" 
+                                   name="domain" 
+                                   x-model="customDomain"
+                                   :disabled="strategy !== 'custom'"
+                                   placeholder="example.com"
+                                   class="w-full rounded-md bg-slate-800 border-slate-700 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        </div>
+                    </label>
+                </div>
+
+                <div class="mt-4 p-3 bg-slate-800 rounded-md border border-slate-700">
+                    <p class="text-xs font-medium text-slate-400 mb-1">Site will be accessible at:</p>
+                    <p class="text-sm font-mono text-white" x-text="
+                        strategy === 'ip' ? '{{ $settings->server_ip ?: 'Set IP in Settings' }}' :
+                        strategy === 'subdomain' ? `${siteName}.{{ $settings->default_domain ?: 'domain.com' }}` :
+                        strategy === 'local' ? `${siteName}{{ $settings->local_domain_suffix }}` :
+                        strategy === 'custom' ? (customDomain || 'Enter custom domain') : ''
+                    "></p>
+                </div>
             </div>
-        </form>
+
     </div>
 </x-layouts.app>

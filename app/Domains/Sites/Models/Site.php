@@ -45,4 +45,19 @@ class Site extends Model
         }
         return null;
     }
+
+    public function getFullDomain(): string
+    {
+        $settings = \App\Models\Settings::get();
+        
+        if ($this->domain) {
+            return $this->domain;
+        }
+        
+        return $settings->getSiteDomain(
+            $this->name,
+            $this->domain_strategy ?? 'ip',
+            $this->domain
+        );
+    }
 }

@@ -24,13 +24,20 @@ class SettingsController extends Controller
             'github_client_id' => ['nullable', 'string', 'max:255'],
             'github_client_secret' => ['nullable', 'string', 'max:255'],
             'github_redirect_uri' => ['nullable', 'string', 'url', 'max:255'],
+            'server_ip' => ['nullable', 'string', 'ip'],
+            'default_domain' => ['nullable', 'string', 'max:255'],
+            'local_domain_suffix' => ['nullable', 'string', 'max:50'],
+            'cloudflare_tunnel_token' => ['nullable', 'string'],
         ]);
         
         $settings = Settings::get();
         
-        // Only update secret if a new one is provided
+        // Only update secrets if new ones are provided
         if (empty($validated['github_client_secret'])) {
             unset($validated['github_client_secret']);
+        }
+        if (empty($validated['cloudflare_tunnel_token'])) {
+            unset($validated['cloudflare_tunnel_token']);
         }
         
         $settings->update($validated);

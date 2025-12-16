@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('domain')->nullable();
+            $table->enum('domain_strategy', ['ip', 'subdomain', 'local', 'custom'])->default('ip');
             $table->string('repo_url');
             $table->string('branch')->default('main');
             $table->string('deploy_path');

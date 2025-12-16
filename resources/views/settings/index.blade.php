@@ -146,10 +146,200 @@
             </form>
         </div>
 
-        <!-- Future Settings Sections -->
+        <!-- Server Configuration -->
+        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-semibold text-white mb-6">Server Configuration</h2>
+            
+            <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+                
+                <!-- Server IP -->
+                <div>
+                    <label for="server_ip" class="block text-sm font-medium text-slate-300 mb-2">Server IP Address</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="server_ip" id="server_ip" 
+                               value="{{ old('server_ip', $settings->server_ip) }}"
+                               class="flex-1 bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="192.168.1.106">
+                        <button type="button" 
+                                onclick="detectServerIp()"
+                                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            Auto-Detect
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">Your server's public or local IP address</p>
+                </div>
+                
+                <!-- Default Domain -->
+                <div>
+                    <label for="default_domain" class="block text-sm font-medium text-slate-300 mb-2">Default Domain</label>
+                    <input type="text" name="default_domain" id="default_domain"
+                           value="{{ old('default_domain', $settings->default_domain) }}"
+                           class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           placeholder="example.com">
+                    <p class="mt-1 text-xs text-slate-500">Sites will be created as subdomain.example.com</p>
+                </div>
+                
+                <!-- Local Domain Suffix -->
+                <div>
+                    <label for="local_domain_suffix" class="block text-sm font-medium text-slate-300 mb-2">Local Domain Suffix</label>
+                    <input type="text" name="local_domain_suffix" id="local_domain_suffix"
+                           value="{{ old('local_domain_suffix', $settings->local_domain_suffix ?? '.local') }}"
+                           class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           placeholder=".local">
+                    <p class="mt-1 text-xs text-slate-500">Suffix for local development domains (e.g., sitename.local)</p>
+                </div>
+                
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                        Save Server Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Cloudflare Tunnel -->
+        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Cloudflare Tunnel</h2>
+                    <p class="text-sm text-slate-400 mt-1">Expose your server to the internet securely without port forwarding</p>
+                </div>
+                @if($settings->cloudflare_tunnel_enabled)
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Active
+                    </span>
+                @else
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-700 text-slate-300">
+                        Inactive
+                    </span>
+                @endif
+            </div>
+
+            <div class="bg-slate-900 rounded-md p-4 mb-6">
+                <h3 class="text-sm font-medium text-white mb-3">Setup Instructions</h3>
+                <ol class="space-y-2 text-sm text-slate-300">
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">1</span>
+                        <span>Install cloudflared: <code class="text-xs bg-slate-800 px-2 py-1 rounded">curl -L https://cloudflared.pages.dev | sudo bash</code></span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">2</span>
+                        <span>Login: <code class="text-xs bg-slate-800 px-2 py-1 rounded">cloudflared tunnel login</code></span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">3</span>
+                        <span>Create tunnel: <code class="text-xs bg-slate-800 px-2 py-1 rounded">cloudflared tunnel create homedeploy</code></span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">4</span>
+                        <span>Copy the tunnel token from the credentials file</span>
+                    </li>
+                </ol>
+            </div>
+
+            <form action="{{ route('settings.update') }}" method="POST" class="space-y-4">
+                @csrf
+                @method('PUT')
+                
+                <div>
+                    <label for="cloudflare_tunnel_token" class="block text-sm font-medium text-slate-300 mb-2">Tunnel Token</label>
+                    <input type="password" name="cloudflare_tunnel_token" id="cloudflare_tunnel_token"
+                           value="{{ old('cloudflare_tunnel_token') }}"
+                           class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-sm"
+                           placeholder="{{ $settings->cloudflare_tunnel_token ? 'Leave blank to keep current token' : 'eyJh...' }}">
+                    @if($settings->cloudflare_tunnel_token)
+                        <p class="mt-1 text-xs text-slate-500">Leave blank to keep the current token</p>
+                    @endif
+                </div>
+
+                <div class="flex items-center justify-between pt-4">
+                    @if($settings->hasCloudflare())
+                        <div class="flex gap-2">
+                            @if(!$settings->cloudflare_tunnel_enabled)
+                                <button type="button" 
+                                        onclick="startTunnel()"
+                                        class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                    Start Tunnel
+                                </button>
+                            @else
+                                <button type="button"
+                                        onclick="stopTunnel()"
+                                        class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                    Stop Tunnel
+                                </button>
+                            @endif
+                        </div>
+                    @endif
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors ml-auto">
+                        Save Tunnel Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Local Hosts Management -->
+        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-semibold text-white mb-2">Local Hosts Management</h2>
+            <p class="text-sm text-slate-400 mb-6">Manage /etc/hosts entries for local development</p>
+            
+            <div class="bg-slate-900 rounded-md p-4 mb-4">
+                <h3 class="text-sm font-medium text-white mb-2">Current Hosts Entries</h3>
+                <div class="font-mono text-xs text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto" id="hosts-content">
+                    Loading...
+                </div>
+            </div>
+
+            <div class="bg-blue-500/10 border border-blue-500/50 rounded-md p-4">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-medium text-blue-300">Local Domain Strategy</h3>
+                        <p class="text-sm text-blue-200 mt-1">When creating a site with "Local Domain" strategy, HomeDeploy will automatically add entries to /etc/hosts pointing to your server IP.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Integrations -->
         <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 opacity-50">
             <h2 class="text-lg font-semibold text-white mb-2">Additional Integrations</h2>
             <p class="text-sm text-slate-400">More integrations coming soon...</p>
         </div>
     </div>
-</x-layouts.app>
+
+    <script>
+        async function detectServerIp() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                document.getElementById('server_ip').value = data.ip;
+            } catch (error) {
+                alert('Failed to detect IP address');
+            }
+        }
+
+        async function loadHostsFile() {
+            // TODO: Implement API endpoint to fetch hosts file content
+            document.getElementById('hosts-content').textContent = '# Will display hosts entries here';
+        }
+
+        async function startTunnel() {
+            // TODO: Implement tunnel start
+            alert('Tunnel management coming soon');
+        }
+
+        async function stopTunnel() {
+            // TODO: Implement tunnel stop
+            alert('Tunnel management coming soon');
+        }
+
+        // Load hosts on page load
+        document.addEventListener('DOMContentLoaded', loadHostsFile);
+    </script>

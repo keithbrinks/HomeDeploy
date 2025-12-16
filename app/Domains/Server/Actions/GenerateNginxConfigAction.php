@@ -12,7 +12,7 @@ class GenerateNginxConfigAction
 {
     public function execute(Site $site): string
     {
-        $serverName = $site->domain ?? "{$site->name}.local";
+        $serverName = $site->getFullDomain();
         $siteName = $site->name;
         
         $config = <<<NGINX

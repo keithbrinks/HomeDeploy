@@ -18,6 +18,17 @@ return new class extends Migration
             $table->string('github_redirect_uri')->nullable();
             $table->text('github_token')->nullable();
             $table->string('github_user')->nullable();
+            
+            // Server configuration
+            $table->string('server_ip')->nullable();
+            $table->string('default_domain')->nullable();
+            $table->string('local_domain_suffix')->default('.local');
+            
+            // Global Cloudflare Tunnel
+            $table->text('cloudflare_tunnel_token')->nullable();
+            $table->string('cloudflare_tunnel_id')->nullable();
+            $table->boolean('cloudflare_tunnel_enabled')->default(false);
+            
             $table->timestamps();
         });
     }

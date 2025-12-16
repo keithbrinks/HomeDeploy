@@ -33,6 +33,7 @@ class SitesController extends Controller
         return view('sites.create', [
             'repositories' => $repositories,
             'hasGithub' => $settings->hasGithubToken(),
+            'settings' => $settings,
         ]);
     }
 
@@ -65,7 +66,22 @@ class SitesController extends Controller
     public function store(StoreSiteRequest $request): RedirectResponse
     {
         try {
-            Site::create($request->validated());
+            $data = $request->validated();
+            $settings = \App\Models\Settings::get();
+            
+            // Set the domain based on the selected strategy
+            $data['domain'] = $settings->getSiteDomain(
+                $data['name'],
+                $data['domain_strategy'],
+                $data['domain'] ?? null
+            );
+            
+            $site = Site::create($data);
+            
+            // If local domain strategy, add to /etc/hosts
+            if ($data['domain_strategy'] === 'local') {
+                $this->addToHosts($site);
+            }
 
             return redirect()->route('dashboard')->with('success', 'Site created successfully!');
         } catch (\Exception $e) {
@@ -77,6 +93,40 @@ class SitesController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Failed to create site. Please try again.');
+        }
+    }
+
+    private function addToHosts(Site $site): void
+    {
+        $settings = \App\Models\Settings::get();
+        $serverIp = $settings->getServerIp();
+        
+        if (!$serverIp) {
+            return;
+        }
+        
+        $entry = "{$serverIp}\t{$site->domain}";
+        $hostsPath = '/etc/hosts';
+        
+        // Check if entry already exists
+        $currentHosts = @file_get_contents($hostsPath);
+        if ($currentHosts && str_contains($currentHosts, $entry)) {
+            return;
+        }
+        
+        // Add entry using sudo
+        $tempPath = storage_path('app/temp-hosts-' . $site->id);
+        file_put_contents($tempPath, "\n{$entry}\n");
+        
+        $result = \Illuminate\Support\Facades\Process::run("sudo bash -c 'cat {$tempPath} >> {$hostsPath}'");
+        
+        @unlink($tempPath);
+        
+        if ($result->failed()) {
+            Log::warning('Failed to add hosts entry', [
+                'site' => $site->name,
+                'error' => $result->errorOutput(),
+            ]);
         }
     }
 

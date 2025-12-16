@@ -63,6 +63,11 @@ class StoreSiteRequest extends FormRequest
                 'max:255',
                 'regex:/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/',
             ],
+            'domain_strategy' => [
+                'required',
+                'string',
+                Rule::in(['ip', 'subdomain', 'local', 'custom']),
+            ],
         ];
     }
 
