@@ -16,23 +16,24 @@ class CreateDatabaseAction
         $sanitized = Str::slug($databaseName, '_');
         $username = Str::limit($sanitized, 16, '');
         $password = Str::random(32);
+        $rootPassword = config('database.mysql_root_password') ?? env('MYSQL_ROOT_PASSWORD');
 
         try {
             // Create database
-            $createDb = Process::run("sudo mysql -e \"CREATE DATABASE IF NOT EXISTS {$sanitized};\"");
+            $createDb = Process::run("sudo mysql -u root -p'{$rootPassword}' -e \"CREATE DATABASE IF NOT EXISTS {$sanitized};\"");
             
             if ($createDb->failed()) {
                 throw new \RuntimeException("Failed to create database: " . $createDb->errorOutput());
             }
 
             // Create user and grant privileges
-            $createUser = Process::run("sudo mysql -e \"CREATE USER IF NOT EXISTS '{$username}'@'localhost' IDENTIFIED BY '{$password}';\"");
+            $createUser = Process::run("sudo mysql -u root -p'{$rootPassword}' -e \"CREATE USER IF NOT EXISTS '{$username}'@'localhost' IDENTIFIED BY '{$password}';\"");
             
             if ($createUser->failed()) {
                 throw new \RuntimeException("Failed to create user: " . $createUser->errorOutput());
             }
 
-            $grantPrivileges = Process::run("sudo mysql -e \"GRANT ALL PRIVILEGES ON {$sanitized}.* TO '{$username}'@'localhost'; FLUSH PRIVILEGES;\"");
+            $grantPrivileges = Process::run("sudo mysql -u root -p'{$rootPassword}' -e \"GRANT ALL PRIVILEGES ON {$sanitized}.* TO '{$username}'@'localhost'; FLUSH PRIVILEGES;\"");
             
             if ($grantPrivileges->failed()) {
                 throw new \RuntimeException("Failed to grant privileges: " . $grantPrivileges->errorOutput());

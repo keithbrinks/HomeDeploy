@@ -19,6 +19,7 @@
             <div class="lg:col-span-2">
                 <form action="{{ route('sites.build-commands.update', $site) }}" method="POST" x-data="{
                     commands: {{ json_encode($site->build_commands ?? ['']) }},
+                    draggedIndex: null,
                     addCommand() {
                         this.commands.push('');
                     },
@@ -27,6 +28,16 @@
                     },
                     loadPreset(commands) {
                         this.commands = commands;
+                    },
+                    moveUp(index) {
+                        if (index > 0) {
+                            [this.commands[index], this.commands[index - 1]] = [this.commands[index - 1], this.commands[index]];
+                        }
+                    },
+                    moveDown(index) {
+                        if (index < this.commands.length - 1) {
+                            [this.commands[index], this.commands[index + 1]] = [this.commands[index + 1], this.commands[index]];
+                        }
                     }
                 }" class="bg-slate-900 rounded-lg border border-slate-800 p-6">
                     @csrf
@@ -34,7 +45,30 @@
 
                     <div class="space-y-4 mb-6">
                         <template x-for="(command, index) in commands" :key="index">
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 items-center">
+                                <!-- Reorder buttons -->
+                                <div class="flex flex-col gap-1">
+                                    <button 
+                                        type="button" 
+                                        @click="moveUp(index)"
+                                        :disabled="index === 0"
+                                        :class="index === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:text-indigo-400'"
+                                        class="text-slate-500 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        @click="moveDown(index)"
+                                        :disabled="index === commands.length - 1"
+                                        :class="index === commands.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-indigo-400'"
+                                        class="text-slate-500 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                                 <div class="flex-shrink-0 w-8 h-10 flex items-center justify-center text-slate-500 font-mono text-sm">
                                     <span x-text="index + 1"></span>.
                                 </div>

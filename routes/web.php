@@ -48,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/sites/{site}/build-commands', [BuildCommandsController::class, 'update'])->name('sites.build-commands.update');
     Route::post('/sites/{site}/env', [EnvironmentVariablesController::class, 'store'])->name('sites.env.store');
     Route::delete('/sites/{site}/env/{environmentVariable}', [EnvironmentVariablesController::class, 'destroy'])->name('sites.env.destroy');
+    Route::put('/sites/{site}/env-file', [EnvironmentVariablesController::class, 'updateEnvFile'])->name('sites.env-file.update');
     Route::get('/api/deployments/{deployment}/logs', [DeploymentLogsController::class, 'show'])->name('api.deployments.logs');
     
     Route::post('/sites/{site}/database', [DatabasesController::class, 'store'])->name('sites.database.create');

@@ -104,12 +104,32 @@
         <!-- Sidebar: History & Config -->
         <div class="space-y-6">
             <!-- Environment Variables -->
-            <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden" x-data="{ showAddForm: false }">
+            <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden" x-data="{ showAddForm: false, editingEnvFile: false, envFileContent: '' }">
                 <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
                     <h3 class="text-lg font-medium text-white">Environment Variables</h3>
-                    <button @click="showAddForm = !showAddForm" class="text-sm text-indigo-400 hover:text-indigo-300">
-                        <span x-text="showAddForm ? 'Cancel' : '+ Add'"></span>
-                    </button>
+                    <div class="flex space-x-2">
+                        <button @click="editingEnvFile = !editingEnvFile; showAddForm = false" class="text-sm text-slate-400 hover:text-white">
+                            <span x-text="editingEnvFile ? 'Cancel' : 'Edit .env'"></span>
+                        </button>
+                        <button @click="showAddForm = !showAddForm; editingEnvFile = false" class="text-sm text-indigo-400 hover:text-indigo-300">
+                            <span x-text="showAddForm ? 'Cancel' : '+ Add'"></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div x-show="editingEnvFile" class="px-6 py-4 border-b border-slate-800 bg-slate-800/50">
+                    <form action="{{ route('sites.env-file.update', $site) }}" method="POST" class="space-y-3">
+                        @csrf
+                        @method('PUT')
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Environment File (.env)</label>
+                            <textarea name="content" rows="15" class="block w-full rounded-md bg-slate-900 border-slate-700 text-white text-sm font-mono placeholder-slate-400" placeholder="APP_NAME=MyApp&#10;APP_ENV=production&#10;APP_DEBUG=false&#10;...">{{ old('content', $site->getEnvFileContent() ?? '') }}</textarea>
+                            <p class="text-xs text-slate-500 mt-2">Edit the entire .env file for this site. Changes are saved to {{ $site->deploy_path }}/.env</p>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-md text-sm font-medium">
+                            Save .env File
+                        </button>
+                    </form>
                 </div>
                 
                 <div x-show="showAddForm" class="px-6 py-4 border-b border-slate-800 bg-slate-800/50">

@@ -54,4 +54,15 @@ class Site extends Model
     {
         return $this->hasOne(\App\Domains\Cloudflare\CloudflareConfig::class);
     }
+
+    public function getEnvFileContent(): ?string
+    {
+        $envPath = $this->deploy_path . '/.env';
+        
+        if (!file_exists($envPath)) {
+            return null;
+        }
+        
+        return file_get_contents($envPath);
+    }
 }

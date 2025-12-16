@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Deployments\Actions;
 
 use App\Domains\Deployments\Deployment;
+use App\Models\Settings;
 use Illuminate\Support\Facades\Process;
 use Throwable;
 
@@ -38,10 +39,12 @@ class RunDeploymentAction
                     throw new \RuntimeException("Failed to set ownership: " . $chownResult->errorOutput());
                 }
                 
-                // Clone if empty
-                $this->runCommand($deployment, "git clone -b {$site->branch} {$site->repo_url} .", $path);
+                // Clone with GitHub token for private repos
+                $cloneUrl = $this->getAuthenticatedRepoUrl($site->repo_url);
+                $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
             } else {
-                // Pull
+                // Pull with GitHub token
+                $this->updateGitRemote($deployment, $path, $site->repo_url);
                 $this->runCommand($deployment, "git pull origin {$site->branch}", $path);
             }
 
@@ -88,5 +91,31 @@ class RunDeploymentAction
         // For MVP, appending to longText is fine.
         $deployment->output .= $message . "\n";
         $deployment->saveQuietly(); // Avoid triggering events if possible, or just save()
+    }
+
+    private function getAuthenticatedRepoUrl(string $repoUrl): string
+    {
+        $settings = Settings::get();
+        
+        if (!$settings->hasGithubToken()) {
+            return $repoUrl; // Return original URL if no token
+        }
+
+        // Convert HTTPS URL to authenticated format: https://TOKEN@github.com/user/repo.git
+        $token = $settings->github_token;
+        
+        if (preg_match('#https://github\.com/(.+)#', $repoUrl, $matches)) {
+            return "https://{$token}@github.com/{$matches[1]}";
+        }
+        
+        return $repoUrl;
+    }
+
+    private function updateGitRemote(Deployment $deployment, string $path, string $repoUrl): void
+    {
+        $authenticatedUrl = $this->getAuthenticatedRepoUrl($repoUrl);
+        
+        // Update the origin remote to use authenticated URL
+        Process::path($path)->run("git remote set-url origin {$authenticatedUrl}");
     }
 }
