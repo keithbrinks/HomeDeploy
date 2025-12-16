@@ -48,16 +48,17 @@ class Site extends Model
 
     public function getFullDomain(): string
     {
-        $settings = \App\Models\Settings::get();
-        
+        // If domain is already set, use it
         if ($this->domain) {
-            return $this->domain;
+            return 'http://' . $this->domain;
         }
         
-        return $settings->getSiteDomain(
+        // Otherwise generate from strategy
+        $settings = \App\Models\Settings::get();
+        return 'http://' . $settings->getSiteDomain(
             $this->name,
             $this->domain_strategy ?? 'ip',
-            $this->domain
+            null
         );
     }
 }
