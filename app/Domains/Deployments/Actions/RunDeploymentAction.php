@@ -74,8 +74,18 @@ class RunDeploymentAction
     {
         $this->log($deployment, "> $command");
 
+        // Set npm cache to a writable location
+        $npmCachePath = storage_path('npm-cache');
+        if (!is_dir($npmCachePath)) {
+            mkdir($npmCachePath, 0755, true);
+        }
+
         $result = Process::path($path)
             ->timeout(600)
+            ->env([
+                'npm_config_cache' => $npmCachePath,
+                'HOME' => $path, // Prevents npm from using /var/www
+            ])
             ->run($command, function (string $type, string $output) use ($deployment) {
                 $this->log($deployment, $output);
             });
