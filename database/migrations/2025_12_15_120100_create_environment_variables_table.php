@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('key');
             $table->text('value'); // Encrypted
             $table->timestamps();
+            
+            $table->index('site_id');
         });
     }
 

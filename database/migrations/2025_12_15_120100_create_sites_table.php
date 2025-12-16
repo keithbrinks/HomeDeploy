@@ -13,15 +13,23 @@ return new class extends Migration
     {
         Schema::create('sites', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
+            $table->string('domain')->nullable();
             $table->string('repo_url');
             $table->string('branch')->default('main');
             $table->string('deploy_path');
             $table->integer('port')->nullable();
+            $table->text('github_token')->nullable();
+            $table->text('webhook_secret')->nullable();
+            $table->string('database_name')->nullable();
+            $table->string('database_username')->nullable();
+            $table->text('database_password')->nullable();
             $table->json('build_commands')->nullable();
-            $table->string('status')->default('inactive'); // active, inactive, deploying
+            $table->string('status')->default('inactive');
             $table->string('nginx_config_path')->nullable();
             $table->timestamps();
+            
+            $table->index('name');
         });
     }
 
