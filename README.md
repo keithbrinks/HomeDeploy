@@ -47,6 +47,24 @@ After installation, access the web interface and configure GitHub OAuth:
 
 That's it! You can now connect GitHub and start deploying sites.
 
+## Database Access (TablePlus)
+
+To connect to MySQL databases on your server using TablePlus or other database tools:
+
+1. **Create a new MySQL connection** in TablePlus
+2. **Enable "Over SSH" (recommended for security)**:
+   - **SSH Host**: Your server's IP address
+   - **SSH Port**: 22
+   - **SSH User**: Your SSH username
+   - **SSH Password/Key**: Your SSH credentials
+3. **Database Connection**:
+   - **Host**: 127.0.0.1
+   - **Port**: 3306
+   - **User**: root
+   - **Password**: Check the installation output or `/root/mysql-root-credentials.txt` on your server
+
+This method is more secure than exposing MySQL directly to the network, as it tunnels the connection through SSH.
+
 ## Local Development (Laravel Herd)
 
 You can run HomeDeploy locally using Laravel Herd for testing and development.
