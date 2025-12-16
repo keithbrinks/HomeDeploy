@@ -196,3 +196,5 @@
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium">Create Site</button>
             </div>
         </form>
+    </div>
+</x-layouts.app>
