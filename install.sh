@@ -35,6 +35,13 @@ if ! command -v composer &> /dev/null; then
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 fi
 
+# Install Node.js (LTS)
+echo -e "${BLUE}Installing Node.js...${NC}"
+if ! command -v node &> /dev/null; then
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt-get install -y nodejs
+fi
+
 # 2. Secure MySQL
 echo -e "${BLUE}Securing MySQL...${NC}"
 MYSQL_ROOT_PASSWORD=$(openssl rand -base64 20 | tr -d "=+/" | cut -c1-25)
