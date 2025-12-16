@@ -19,13 +19,9 @@ return new class extends Migration
             $table->text('github_token')->nullable();
             $table->string('github_user')->nullable();
             
-            // HomeDeploy configuration
-            $table->string('homedeploy_domain')->nullable(); // Domain for accessing HomeDeploy UI
-            
-            // Deployed sites configuration
+            // Server configuration
             $table->string('server_ip')->nullable(); // Server's public/local IP address
-            $table->string('sites_base_domain')->nullable(); // Base domain for subdomain strategy (e.g., example.com)
-            $table->string('sites_local_suffix')->default('.local'); // Suffix for local development domains
+            $table->string('base_domain')->nullable(); // Base domain for sites (e.g., example.com)
             
             // Global Cloudflare Tunnel
             $table->text('cloudflare_tunnel_token')->nullable();

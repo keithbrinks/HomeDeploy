@@ -76,7 +76,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
     Route::get('/settings/test-github', [SettingsController::class, 'testGithub'])->name('settings.test-github');
-    Route::post('/settings/regenerate-nginx', [SettingsController::class, 'regenerateNginx'])->name('settings.regenerate-nginx');
     Route::post('/settings/tunnel/start', [CloudflareTunnelController::class, 'start'])->name('settings.tunnel.start');
     Route::post('/settings/tunnel/stop', [CloudflareTunnelController::class, 'stop'])->name('settings.tunnel.stop');
     Route::post('/system/update', [SystemUpdateController::class, 'update'])->name('system.update.perform');

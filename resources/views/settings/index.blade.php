@@ -146,44 +146,10 @@
             </form>
         </div>
 
-        <!-- HomeDeploy Configuration -->
+        <!-- Server Configuration -->
         <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold text-white mb-2">HomeDeploy Configuration</h2>
-            <p class="text-sm text-slate-400 mb-6">Settings for accessing this HomeDeploy installation</p>
-            
-            <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
-                @csrf
-                @method('PUT')
-                
-                <!-- HomeDeploy Domain -->
-                <div>
-                    <label for="homedeploy_domain" class="block text-sm font-medium text-slate-300 mb-2">HomeDeploy Domain</label>
-                    <div class="flex gap-2">
-                        <input type="text" name="homedeploy_domain" id="homedeploy_domain"
-                               value="{{ old('homedeploy_domain', $settings->homedeploy_domain) }}"
-                               class="flex-1 bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                               placeholder="homedeploy.local">
-                        <button type="button"
-                                onclick="if(confirm('Regenerate HomeDeploy Nginx config with this domain?')) { fetch('{{ route('settings.regenerate-nginx') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => location.reload()); }"
-                                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap">
-                            Update Nginx
-                        </button>
-                    </div>
-                    <p class="mt-1 text-xs text-slate-500">Domain for accessing this HomeDeploy control panel (not your deployed sites)</p>
-                </div>
-                
-                <div class="flex justify-end pt-4 border-t border-slate-700">
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
-                        Save Configuration
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Deployed Sites Configuration -->
-        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold text-white mb-2">Deployed Sites Configuration</h2>
-            <p class="text-sm text-slate-400 mb-6">Default settings for sites you deploy through HomeDeploy</p>
+            <h2 class="text-lg font-semibold text-white mb-2">Server Configuration</h2>
+            <p class="text-sm text-slate-400 mb-6">Basic server settings for your deployment environment</p>
             
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
                 @csrf
@@ -203,27 +169,17 @@
                             Auto-Detect
                         </button>
                     </div>
-                    <p class="mt-1 text-xs text-slate-500">Used for <strong>IP strategy</strong> - sites accessed directly via IP address</p>
+                    <p class="mt-1 text-xs text-slate-500">Your server's IP address for direct access</p>
                 </div>
                 
-                <!-- Sites Base Domain -->
+                <!-- Base Domain -->
                 <div>
-                    <label for="sites_base_domain" class="block text-sm font-medium text-slate-300 mb-2">Base Domain for Sites</label>
-                    <input type="text" name="sites_base_domain" id="sites_base_domain"
-                           value="{{ old('sites_base_domain', $settings->sites_base_domain) }}"
+                    <label for="base_domain" class="block text-sm font-medium text-slate-300 mb-2">Base Domain</label>
+                    <input type="text" name="base_domain" id="base_domain"
+                           value="{{ old('base_domain', $settings->base_domain) }}"
                            class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                            placeholder="example.com">
-                    <p class="mt-1 text-xs text-slate-500">Used for <strong>Subdomain strategy</strong> - sites created as <code class="text-indigo-400">sitename.example.com</code></p>
-                </div>
-                
-                <!-- Sites Local Suffix -->
-                <div>
-                    <label for="sites_local_suffix" class="block text-sm font-medium text-slate-300 mb-2">Local Development Suffix</label>
-                    <input type="text" name="sites_local_suffix" id="sites_local_suffix"
-                           value="{{ old('sites_local_suffix', $settings->sites_local_suffix ?? '.local') }}"
-                           class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                           placeholder=".local">
-                    <p class="mt-1 text-xs text-slate-500">Used for <strong>Local strategy</strong> - sites created as <code class="text-indigo-400">sitename.local</code> with automatic /etc/hosts entry</p>
+                    <p class="mt-1 text-xs text-slate-500">Your main domain - sites will be created as <code class="text-indigo-400">sitename.example.com</code></p>
                 </div>
                 
                 <div class="flex justify-end pt-4 border-t border-slate-700">
@@ -327,7 +283,6 @@
                     <textarea name="cloudflare_tunnel_token" id="cloudflare_tunnel_token" rows="6"
                            class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-xs"
                            placeholder='{"AccountTag":"...","TunnelSecret":"...","TunnelID":"..."}'></textarea>
-                           placeholder="{{ $settings->cloudflare_tunnel_token ? 'Leave blank to keep current token' : 'eyJh...' }}">
                     @if($settings->cloudflare_tunnel_token)
                         <p class="mt-1 text-xs text-slate-500">Leave blank to keep the current token</p>
                     @endif
@@ -363,37 +318,6 @@
                 </div>
             </form>
         </div>
-
-        <!-- Local Hosts Management -->
-        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold text-white mb-2">Local Hosts Management</h2>
-            <p class="text-sm text-slate-400 mb-6">Manage /etc/hosts entries for local development</p>
-            
-            <div class="bg-slate-900 rounded-md p-4 mb-4">
-                <h3 class="text-sm font-medium text-white mb-2">Current Hosts Entries</h3>
-                <div class="font-mono text-xs text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto" id="hosts-content">
-                    Loading...
-                </div>
-            </div>
-
-            <div class="bg-blue-500/10 border border-blue-500/50 rounded-md p-4">
-                <div class="flex items-start">
-                    <svg class="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-medium text-blue-300">Local Domain Strategy</h3>
-                        <p class="text-sm text-blue-200 mt-1">When creating a site with "Local Domain" strategy, HomeDeploy will automatically add entries to /etc/hosts pointing to your server IP.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Integrations -->
-        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 opacity-50">
-            <h2 class="text-lg font-semibold text-white mb-2">Additional Integrations</h2>
-            <p class="text-sm text-slate-400">More integrations coming soon...</p>
-        </div>
     </div>
 
     <script>
@@ -406,13 +330,5 @@
                 alert('Failed to detect IP address');
             }
         }
-
-        async function loadHostsFile() {
-            // TODO: Implement API endpoint to fetch hosts file content
-            document.getElementById('hosts-content').textContent = '# Will display hosts entries here';
-        }
-
-        // Load hosts on page load
-        document.addEventListener('DOMContentLoaded', loadHostsFile);
     </script>
 </x-layouts.app>

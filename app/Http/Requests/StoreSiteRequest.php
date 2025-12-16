@@ -66,7 +66,7 @@ class StoreSiteRequest extends FormRequest
             'domain_strategy' => [
                 'required',
                 'string',
-                Rule::in(['ip', 'subdomain', 'local', 'custom']),
+                Rule::in(['subdomain', 'custom']),
             ],
         ];
     }

@@ -233,16 +233,12 @@
             <!-- Domain Configuration -->
             <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden" x-data="{ 
                 editing: false,
-                strategy: '{{ $site->domain_strategy ?? 'ip' }}',
+                strategy: '{{ $site->domain_strategy ?? 'subdomain' }}',
                 customDomain: '{{ $site->domain ?? '' }}',
-                serverIp: '{{ app(\App\Models\Settings::class)->first()?->server_ip ?? '' }}',
-                defaultDomain: '{{ app(\App\Models\Settings::class)->first()?->sites_base_domain ?? '' }}',
-                localSuffix: '{{ app(\App\Models\Settings::class)->first()?->sites_local_suffix ?? '.local' }}',
+                defaultDomain: '{{ app(\App\Models\Settings::class)->first()?->base_domain ?? '' }}',
                 get preview() {
                     switch(this.strategy) {
-                        case 'ip': return 'http://' + this.serverIp;
                         case 'subdomain': return 'http://{{ $site->name }}.' + this.defaultDomain;
-                        case 'local': return 'http://{{ $site->name }}' + this.localSuffix;
                         case 'custom': return 'http://' + this.customDomain;
                         default: return '';
                     }
@@ -262,7 +258,7 @@
                             {{ $site->getFullDomain() }}
                             <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                         </a>
-                        <p class="text-xs text-slate-500 mt-2">Strategy: <span class="capitalize">{{ $site->domain_strategy ?? 'ip' }}</span></p>
+                        <p class="text-xs text-slate-500 mt-2">Strategy: <span class="capitalize">{{ $site->domain_strategy ?? 'subdomain' }}</span></p>
                     </div>
                 </div>
 
@@ -273,26 +269,10 @@
                         
                         <div class="space-y-3">
                             <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
-                                <input type="radio" name="domain_strategy" value="ip" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
-                                <span class="ml-3 flex-1">
-                                    <span class="block text-sm font-medium text-white">Server IP</span>
-                                    <span class="block text-xs text-slate-400 mt-0.5">Access via server's IP address</span>
-                                </span>
-                            </label>
-
-                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
                                 <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
                                 <span class="ml-3 flex-1">
-                                    <span class="block text-sm font-medium text-white">Subdomain</span>
+                                    <span class="block text-sm font-medium text-white">Subdomain (Recommended)</span>
                                     <span class="block text-xs text-slate-400 mt-0.5">Use sitename.yourdomain.com pattern</span>
-                                </span>
-                            </label>
-
-                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
-                                <input type="radio" name="domain_strategy" value="local" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
-                                <span class="ml-3 flex-1">
-                                    <span class="block text-sm font-medium text-white">Local Development</span>
-                                    <span class="block text-xs text-slate-400 mt-0.5">Use .local domain with /etc/hosts</span>
                                 </span>
                             </label>
 
@@ -300,7 +280,7 @@
                                 <input type="radio" name="domain_strategy" value="custom" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
                                 <span class="ml-3 flex-1">
                                     <span class="block text-sm font-medium text-white">Custom Domain</span>
-                                    <span class="block text-xs text-slate-400 mt-0.5">Manually specify a domain</span>
+                                    <span class="block text-xs text-slate-400 mt-0.5">Use your own domain (configure DNS to point to server)</span>
                                 </span>
                             </label>
 

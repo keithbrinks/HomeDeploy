@@ -119,7 +119,7 @@
 
             <!-- Domain Configuration -->
             <div x-data="{
-                strategy: 'ip',
+                strategy: 'subdomain',
                 customDomain: '',
                 siteName: '',
                 updatePreview() {
@@ -129,38 +129,17 @@
                 <label class="block text-sm font-medium text-slate-300 mb-3">Domain Configuration</label>
                 
                 <div class="space-y-3">
-                    <!-- Server IP -->
-                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors" 
-                           :class="strategy === 'ip' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
-                        <input type="radio" name="domain_strategy" value="ip" x-model="strategy" class="mt-1 text-indigo-600">
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-white">Server IP</p>
-                            <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono">{{ $settings->server_ip ?: 'Set IP in Settings' }}</span></p>
-                        </div>
-                    </label>
-
                     <!-- Subdomain -->
                     <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
                            :class="strategy === 'subdomain' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
-                        <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="mt-1 text-indigo-600" {{ $settings->sites_base_domain ? '' : 'disabled' }}>
+                        <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="mt-1 text-indigo-600" {{ $settings->base_domain ? '' : 'disabled' }}>
                         <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-white">Subdomain</p>
-                            @if($settings->sites_base_domain)
-                                <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}.{{ $settings->sites_base_domain }}`"></span></p>
+                            <p class="text-sm font-medium text-white">Subdomain (Recommended)</p>
+                            @if($settings->base_domain)
+                                <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}.{{ $settings->base_domain }}`"></span></p>
                             @else
                                 <p class="text-xs text-amber-400 mt-1">Set base domain in Settings first</p>
                             @endif
-                        </div>
-                    </label>
-
-                    <!-- Local Domain -->
-                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
-                           :class="strategy === 'local' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
-                        <input type="radio" name="domain_strategy" value="local" x-model="strategy" class="mt-1 text-indigo-600">
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-white">Local Domain</p>
-                            <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}{{ $settings->sites_local_suffix }}`"></span></p>
-                            <p class="text-xs text-slate-500 mt-1">Automatically adds /etc/hosts entry</p>
                         </div>
                     </label>
 
@@ -176,6 +155,7 @@
                                    :disabled="strategy !== 'custom'"
                                    placeholder="example.com"
                                    class="w-full rounded-md bg-slate-800 border-slate-700 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            <p class="text-xs text-slate-500 mt-1">Configure DNS to point to {{ $settings->server_ip ?: 'your server IP' }}</p>
                         </div>
                     </label>
                 </div>
@@ -183,9 +163,7 @@
                 <div class="mt-4 p-3 bg-slate-800 rounded-md border border-slate-700">
                     <p class="text-xs font-medium text-slate-400 mb-1">Site will be accessible at:</p>
                     <p class="text-sm font-mono text-white" x-text="
-                        strategy === 'ip' ? '{{ $settings->server_ip ?: 'Set IP in Settings' }}' :
-                        strategy === 'subdomain' ? `${siteName}.{{ $settings->sites_base_domain ?: 'domain.com' }}` :
-                        strategy === 'local' ? `${siteName}{{ $settings->sites_local_suffix }}` :
+                        strategy === 'subdomain' ? `${siteName}.{{ $settings->base_domain ?: 'domain.com' }}` :
                         strategy === 'custom' ? (customDomain || 'Enter custom domain') : ''
                     "></p>
                 </div>

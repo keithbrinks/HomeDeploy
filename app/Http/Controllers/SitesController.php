@@ -77,11 +77,6 @@ class SitesController extends Controller
             );
             
             $site = Site::create($data);
-            
-            // If local domain strategy, add to /etc/hosts
-            if ($data['domain_strategy'] === 'local') {
-                $this->addToHosts($site);
-            }
 
             return redirect()->route('dashboard')->with('success', 'Site created successfully!');
         } catch (\Exception $e) {
@@ -93,40 +88,6 @@ class SitesController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Failed to create site. Please try again.');
-        }
-    }
-
-    private function addToHosts(Site $site): void
-    {
-        $settings = \App\Models\Settings::get();
-        $serverIp = $settings->getServerIp();
-        
-        if (!$serverIp) {
-            return;
-        }
-        
-        $entry = "{$serverIp}\t{$site->domain}";
-        $hostsPath = '/etc/hosts';
-        
-        // Check if entry already exists
-        $currentHosts = @file_get_contents($hostsPath);
-        if ($currentHosts && str_contains($currentHosts, $entry)) {
-            return;
-        }
-        
-        // Add entry using sudo
-        $tempPath = storage_path('app/temp-hosts-' . $site->id);
-        file_put_contents($tempPath, "\n{$entry}\n");
-        
-        $result = \Illuminate\Support\Facades\Process::run("sudo bash -c 'cat {$tempPath} >> {$hostsPath}'");
-        
-        @unlink($tempPath);
-        
-        if ($result->failed()) {
-            Log::warning('Failed to add hosts entry', [
-                'site' => $site->name,
-                'error' => $result->errorOutput(),
-            ]);
         }
     }
 
@@ -145,7 +106,7 @@ class SitesController extends Controller
     public function updateDomain(Request $request, Site $site): RedirectResponse
     {
         $validated = $request->validate([
-            'domain_strategy' => 'required|in:ip,subdomain,local,custom',
+            'domain_strategy' => 'required|in:subdomain,custom',
             'custom_domain' => 'nullable|string',
         ]);
 
@@ -163,11 +124,6 @@ class SitesController extends Controller
             'domain_strategy' => $validated['domain_strategy'],
             'domain' => $newDomain,
         ]);
-
-        // Add to /etc/hosts if local strategy
-        if ($validated['domain_strategy'] === 'local') {
-            $this->addToHosts($site);
-        }
 
         // Regenerate Nginx config with new domain
         $generateNginxAction = app(\App\Domains\Server\Actions\GenerateNginxConfigAction::class);
