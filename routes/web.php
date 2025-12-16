@@ -13,6 +13,7 @@ use App\Http\Controllers\NginxController;
 use App\Http\Controllers\RollbackController;
 use App\Http\Controllers\ServerMetricsController;
 use App\Http\Controllers\ServicesController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SitesController;
 use App\Http\Controllers\SystemUpdateController;
 use App\Http\Controllers\WebhookController;
@@ -66,6 +67,10 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/system/update', [SystemUpdateController::class, 'index'])->name('system.update');
     Route::get('/system/update/check', [SystemUpdateController::class, 'check'])->name('system.update.check');
+    
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings/test-github', [SettingsController::class, 'testGithub'])->name('settings.test-github');
     Route::post('/system/update', [SystemUpdateController::class, 'update'])->name('system.update.perform');
 
     Route::get('/auth/github', [GithubController::class, 'redirect'])->name('auth.github');
