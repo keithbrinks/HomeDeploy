@@ -120,6 +120,14 @@ chmod -R 775 $INSTALL_DIR/bootstrap/cache
 chmod 775 $INSTALL_DIR/database
 chmod 664 $INSTALL_DIR/database/database.sqlite
 
+# Configure sudo permissions for www-data
+echo -e "${BLUE}Configuring sudo permissions...${NC}"
+cat > /etc/sudoers.d/homedeploy <<EOF
+# HomeDeploy: Allow www-data to manage deployments and server configuration
+www-data ALL=(ALL) NOPASSWD: /bin/mkdir, /bin/chown, /bin/cp, /bin/ln, /usr/bin/git, /usr/sbin/nginx, /usr/bin/systemctl reload nginx, /usr/bin/systemctl restart nginx, /usr/bin/mysql
+EOF
+chmod 440 /etc/sudoers.d/homedeploy
+
 # Run Migrations
 echo -e "${BLUE}Running migrations...${NC}"
 php artisan migrate --force

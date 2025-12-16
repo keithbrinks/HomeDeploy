@@ -25,7 +25,18 @@ class RunDeploymentAction
             // Ensure directory exists
             if (! is_dir($path)) {
                 $this->log($deployment, "Creating directory: $path");
-                mkdir($path, 0755, true);
+                
+                // Create directory with sudo to handle permissions
+                $mkdirResult = Process::run("sudo mkdir -p '$path'");
+                if ($mkdirResult->failed()) {
+                    throw new \RuntimeException("Failed to create directory: " . $mkdirResult->errorOutput());
+                }
+                
+                // Set ownership to www-data
+                $chownResult = Process::run("sudo chown -R www-data:www-data '$path'");
+                if ($chownResult->failed()) {
+                    throw new \RuntimeException("Failed to set ownership: " . $chownResult->errorOutput());
+                }
                 
                 // Clone if empty
                 $this->runCommand($deployment, "git clone -b {$site->branch} {$site->repo_url} .", $path);

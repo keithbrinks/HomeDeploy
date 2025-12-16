@@ -6,6 +6,7 @@ namespace App\Domains\Server\Actions;
 
 use App\Domains\Sites\Site;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
 
 class GenerateNginxConfigAction
 {
@@ -52,13 +53,36 @@ NGINX;
 
         $configPath = "/etc/nginx/sites-available/{$siteName}";
         
-        // Write config file
-        File::put($configPath, $config);
+        // Write config file using sudo
+        $tempPath = storage_path("app/nginx-{$siteName}.conf");
+        File::put($tempPath, $config);
         
-        // Create symlink
+        $result = Process::run("sudo cp '$tempPath' '$configPath'");
+        if ($result->failed()) {
+            File::delete($tempPath);
+            throw new \RuntimeException("Failed to write Nginx config: " . $result->errorOutput());
+        }
+        
+        File::delete($tempPath);
+        
+        // Create symlink using sudo
         $enabledPath = "/etc/nginx/sites-enabled/{$siteName}";
         if (! file_exists($enabledPath)) {
-            symlink($configPath, $enabledPath);
+            $linkResult = Process::run("sudo ln -sf '$configPath' '$enabledPath'");
+            if ($linkResult->failed()) {
+                throw new \RuntimeException("Failed to create symlink: " . $linkResult->errorOutput());
+            }
+        }
+        
+        // Test and reload Nginx
+        $testResult = Process::run("sudo nginx -t");
+        if ($testResult->failed()) {
+            throw new \RuntimeException("Nginx config test failed: " . $testResult->errorOutput());
+        }
+        
+        $reloadResult = Process::run("sudo systemctl reload nginx");
+        if ($reloadResult->failed()) {
+            throw new \RuntimeException("Failed to reload Nginx: " . $reloadResult->errorOutput());
         }
 
         $site->update(['nginx_config_path' => $configPath]);

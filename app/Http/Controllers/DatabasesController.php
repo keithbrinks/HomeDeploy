@@ -90,12 +90,4 @@ class DatabasesController extends Controller
             return back()->with('error', 'An unexpected error occurred. Please try again.');
         }
     }
-                'database_password' => null,
-            ]);
-
-            return back()->with('success', 'Database dropped successfully.');
-        } catch (\RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
 }
