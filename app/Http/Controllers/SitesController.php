@@ -20,11 +20,11 @@ class SitesController extends Controller
     public function create(FetchGithubRepositoriesAction $action): View
     {
         $repositories = [];
-        $user = Auth::user();
+        $settings = \App\Models\Settings::get();
 
-        if ($user?->github_token) {
+        if ($settings->hasGithubToken()) {
             try {
-                $repositories = $action->execute($user->github_token);
+                $repositories = $action->execute($settings->github_token);
             } catch (\Exception $e) {
                 session()->flash('error', 'Failed to load GitHub repositories. Please reconnect your account.');
             }
@@ -32,7 +32,7 @@ class SitesController extends Controller
 
         return view('sites.create', [
             'repositories' => $repositories,
-            'hasGithub' => (bool) $user?->github_token,
+            'hasGithub' => $settings->hasGithubToken(),
         ]);
     }
 
@@ -43,15 +43,15 @@ class SitesController extends Controller
             'repo' => 'required|string',
         ]);
 
-        $user = Auth::user();
+        $settings = \App\Models\Settings::get();
 
-        if (! $user?->github_token) {
+        if (! $settings->hasGithubToken()) {
             return response()->json(['error' => 'GitHub not connected'], 401);
         }
 
         try {
             $branches = $action->execute(
-                $user->github_token,
+                $settings->github_token,
                 $validated['owner'],
                 $validated['repo']
             );

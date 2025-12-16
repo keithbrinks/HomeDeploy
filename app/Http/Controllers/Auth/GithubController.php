@@ -54,17 +54,12 @@ class GithubController extends Controller
 
         $socialiteUser = Socialite::driver('github')->user();
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+        // Store the token in Settings instead of per-user
+        $settings->update([
+            'github_token' => $socialiteUser->token,
+            'github_user' => $socialiteUser->nickname ?? $socialiteUser->name,
+        ]);
 
-        if (! $user) {
-            // If not logged in, we might want to deny or handle login.
-            // For MVP, assume admin is logged in to connect.
-            abort(403, 'Must be logged in to connect GitHub.');
-        }
-
-        $action->execute($user, $socialiteUser);
-
-        return redirect()->route('dashboard')->with('status', 'GitHub connected successfully!');
+        return redirect()->route('settings.index')->with('status', 'GitHub connected successfully!');
     }
 }

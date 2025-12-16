@@ -4,9 +4,9 @@
     <div class="flex justify-between items-center mb-8">
         <div>
             <h1 class="text-2xl font-bold text-white">Dashboard</h1>
-            @if(!App\Models\Settings::get()->hasGithubOAuth())
+            @if(!App\Models\Settings::get()->isGithubConnected())
                 <p class="text-sm text-slate-400 mt-1">
-                    <a href="{{ route('settings.index') }}" class="text-indigo-400 hover:text-indigo-300">Configure GitHub OAuth</a> to browse repositories
+                    <a href="{{ route('settings.index') }}" class="text-indigo-400 hover:text-indigo-300">Connect GitHub</a> to browse repositories
                 </p>
             @endif
         </div>

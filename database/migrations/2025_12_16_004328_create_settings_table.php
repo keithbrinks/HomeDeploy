@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('github_client_id')->nullable();
             $table->text('github_client_secret')->nullable();
             $table->string('github_redirect_uri')->nullable();
+            $table->text('github_token')->nullable();
+            $table->string('github_user')->nullable();
             $table->timestamps();
         });
     }
