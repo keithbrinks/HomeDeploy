@@ -190,11 +190,18 @@ systemctl restart homedeploy-queue
 
 # Configure Nginx
 echo -e "${BLUE}Configuring Nginx...${NC}"
+
+# Prompt for domain/hostname
+read -p "Enter domain for HomeDeploy (press Enter for server's hostname): " HOMEDEPLOY_DOMAIN
+if [ -z "$HOMEDEPLOY_DOMAIN" ]; then
+    HOMEDEPLOY_DOMAIN=$(hostname -f 2>/dev/null || hostname)
+fi
+
 cat > /etc/nginx/sites-available/homedeploy <<EOF
 server {
     listen 80;
     listen [::]:80;
-    server_name _;
+    server_name ${HOMEDEPLOY_DOMAIN};
 
     location / {
         proxy_pass http://127.0.0.1:8080;
