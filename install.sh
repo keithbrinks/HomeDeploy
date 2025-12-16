@@ -132,7 +132,7 @@ chmod 664 $INSTALL_DIR/database/database.sqlite
 echo -e "${BLUE}Configuring sudo permissions...${NC}"
 cat > /etc/sudoers.d/homedeploy <<EOF
 # HomeDeploy: Allow www-data to manage deployments and server configuration
-www-data ALL=(ALL) NOPASSWD: /bin/mkdir, /bin/chown, /bin/cp, /bin/ln, /usr/bin/git, /usr/sbin/nginx, /usr/bin/systemctl reload nginx, /usr/bin/systemctl restart nginx, /usr/bin/mysql
+www-data ALL=(ALL) NOPASSWD: /bin/mkdir, /bin/chown, /bin/cp, /bin/ln, /bin/cat, /usr/bin/git, /usr/sbin/nginx, /usr/bin/systemctl reload nginx, /usr/bin/systemctl restart nginx, /usr/bin/mysql
 EOF
 chmod 440 /etc/sudoers.d/homedeploy
 

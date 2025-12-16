@@ -46,10 +46,12 @@ class DropDatabaseAction
             return $password;
         }
 
-        // Try reading from credentials file
+        // Try reading from credentials file using sudo
         $credFile = '/root/mysql-root-credentials.txt';
-        if (file_exists($credFile)) {
-            $contents = file_get_contents($credFile);
+        $result = Process::run("sudo cat {$credFile} 2>/dev/null");
+        
+        if ($result->successful()) {
+            $contents = $result->output();
             if (preg_match('/Password:\s*(.+)/', $contents, $matches)) {
                 return trim($matches[1]);
             }
