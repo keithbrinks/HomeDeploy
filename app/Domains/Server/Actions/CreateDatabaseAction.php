@@ -16,7 +16,13 @@ class CreateDatabaseAction
         $sanitized = Str::slug($databaseName, '_');
         $username = Str::limit($sanitized, 16, '');
         $password = Str::random(32);
-        $rootPassword = config('database.mysql_root_password') ?? env('MYSQL_ROOT_PASSWORD');
+        
+        // Get MySQL root password
+        $rootPassword = $this->getMysqlRootPassword();
+        
+        if (!$rootPassword) {
+            throw new \RuntimeException("MySQL root password not found. Check /root/mysql-root-credentials.txt or set MYSQL_ROOT_PASSWORD environment variable.");
+        }
 
         try {
             // Create database
@@ -48,5 +54,25 @@ class CreateDatabaseAction
         } catch (ProcessFailedException $e) {
             throw new \RuntimeException("Process failed: " . $e->getMessage());
         }
+    }
+
+    private function getMysqlRootPassword(): ?string
+    {
+        // Try environment variable first
+        $password = env('MYSQL_ROOT_PASSWORD');
+        if ($password) {
+            return $password;
+        }
+
+        // Try reading from credentials file
+        $credFile = '/root/mysql-root-credentials.txt';
+        if (file_exists($credFile)) {
+            $contents = file_get_contents($credFile);
+            if (preg_match('/Password:\s*(.+)/', $contents, $matches)) {
+                return trim($matches[1]);
+            }
+        }
+
+        return null;
     }
 }
