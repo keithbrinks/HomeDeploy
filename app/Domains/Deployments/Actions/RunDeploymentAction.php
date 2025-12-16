@@ -58,6 +58,12 @@ class RunDeploymentAction
                         continue;
                     }
                     
+                    // Clear config cache before migrations to ensure .env changes are picked up
+                    if ($this->isMigrateCommand($command)) {
+                        $this->log($deployment, "Clearing config cache before migration...");
+                        $this->runCommand($deployment, "php artisan config:clear", $path);
+                    }
+                    
                     $this->runCommand($deployment, $command, $path);
                 }
             }
