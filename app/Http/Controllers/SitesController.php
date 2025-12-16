@@ -141,4 +141,38 @@ class SitesController extends Controller
 
         return view('sites.show', ['site' => $site]);
     }
+
+    public function updateDomain(Request $request, Site $site): RedirectResponse
+    {
+        $validated = $request->validate([
+            'domain_strategy' => 'required|in:ip,subdomain,local,custom',
+            'custom_domain' => 'nullable|string',
+        ]);
+
+        $settings = \App\Models\Settings::get();
+        
+        // Calculate new domain based on strategy
+        $newDomain = $settings->getSiteDomain(
+            $site->name,
+            $validated['domain_strategy'],
+            $validated['custom_domain'] ?? null
+        );
+
+        // Update site
+        $site->update([
+            'domain_strategy' => $validated['domain_strategy'],
+            'domain' => $newDomain,
+        ]);
+
+        // Add to /etc/hosts if local strategy
+        if ($validated['domain_strategy'] === 'local') {
+            $this->addToHosts($site);
+        }
+
+        // Regenerate Nginx config with new domain
+        $generateNginxAction = app(\App\Domains\Server\Actions\GenerateNginxConfigAction::class);
+        $generateNginxAction->execute($site);
+
+        return redirect()->route('sites.show', $site)->with('success', 'Domain configuration updated! Nginx config regenerated.');
+    }
 }

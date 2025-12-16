@@ -55,6 +55,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/sites/{site}/database', [DatabasesController::class, 'destroy'])->name('sites.database.destroy');
     Route::post('/sites/{site}/database/sync', [DatabasesController::class, 'sync'])->name('sites.database.sync');
     
+    Route::put('/sites/{site}/domain', [SitesController::class, 'updateDomain'])->name('sites.domain.update');
+    
     Route::get('/sites/{site}/cloudflare', [CloudflareController::class, 'edit'])->name('cloudflare.edit');
     Route::post('/sites/{site}/cloudflare', [CloudflareController::class, 'store'])->name('cloudflare.store');
     Route::post('/sites/{site}/cloudflare/start', [CloudflareController::class, 'start'])->name('cloudflare.start');

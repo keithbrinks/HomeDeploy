@@ -230,6 +230,101 @@
                 </div>
             </div>
 
+            <!-- Domain Configuration -->
+            <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden" x-data="{ 
+                editing: false,
+                strategy: '{{ $site->domain_strategy ?? 'ip' }}',
+                customDomain: '{{ $site->domain ?? '' }}',
+                serverIp: '{{ app(\App\Models\Settings::class)->first()?->server_ip ?? '' }}',
+                defaultDomain: '{{ app(\App\Models\Settings::class)->first()?->default_domain ?? '' }}',
+                localSuffix: '{{ app(\App\Models\Settings::class)->first()?->local_domain_suffix ?? '.local' }}',
+                get preview() {
+                    switch(this.strategy) {
+                        case 'ip': return 'http://' + this.serverIp;
+                        case 'subdomain': return 'http://{{ $site->name }}.' + this.defaultDomain;
+                        case 'local': return 'http://{{ $site->name }}' + this.localSuffix;
+                        case 'custom': return 'http://' + this.customDomain;
+                        default: return '';
+                    }
+                }
+            }">
+                <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-white">Domain</h3>
+                    <button @click="editing = !editing" class="text-sm text-slate-400 hover:text-white">
+                        <span x-text="editing ? 'Cancel' : 'Edit'"></span>
+                    </button>
+                </div>
+                
+                <div x-show="!editing" class="px-6 py-4">
+                    <div class="bg-slate-800/50 rounded p-3">
+                        <p class="text-xs text-slate-400 mb-1">Current URL</p>
+                        <a href="{{ $site->getFullDomain() }}" target="_blank" class="text-sm font-mono text-indigo-400 hover:text-indigo-300 flex items-center">
+                            {{ $site->getFullDomain() }}
+                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        </a>
+                        <p class="text-xs text-slate-500 mt-2">Strategy: <span class="capitalize">{{ $site->domain_strategy ?? 'ip' }}</span></p>
+                    </div>
+                </div>
+
+                <div x-show="editing" class="px-6 py-4 border-t border-slate-800 bg-slate-800/50">
+                    <form action="{{ route('sites.domain.update', $site) }}" method="POST" class="space-y-4">
+                        @csrf
+                        @method('PUT')
+                        
+                        <div class="space-y-3">
+                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
+                                <input type="radio" name="domain_strategy" value="ip" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-3 flex-1">
+                                    <span class="block text-sm font-medium text-white">Server IP</span>
+                                    <span class="block text-xs text-slate-400 mt-0.5">Access via server's IP address</span>
+                                </span>
+                            </label>
+
+                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
+                                <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-3 flex-1">
+                                    <span class="block text-sm font-medium text-white">Subdomain</span>
+                                    <span class="block text-xs text-slate-400 mt-0.5">Use sitename.yourdomain.com pattern</span>
+                                </span>
+                            </label>
+
+                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
+                                <input type="radio" name="domain_strategy" value="local" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-3 flex-1">
+                                    <span class="block text-sm font-medium text-white">Local Development</span>
+                                    <span class="block text-xs text-slate-400 mt-0.5">Use .local domain with /etc/hosts</span>
+                                </span>
+                            </label>
+
+                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
+                                <input type="radio" name="domain_strategy" value="custom" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-3 flex-1">
+                                    <span class="block text-sm font-medium text-white">Custom Domain</span>
+                                    <span class="block text-xs text-slate-400 mt-0.5">Manually specify a domain</span>
+                                </span>
+                            </label>
+
+                            <div x-show="strategy === 'custom'" class="pl-3">
+                                <input type="text" 
+                                       name="custom_domain" 
+                                       x-model="customDomain"
+                                       placeholder="example.com"
+                                       class="block w-full rounded-md bg-slate-900 border-slate-700 text-white text-sm placeholder-slate-400">
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-500/10 border border-indigo-500/20 rounded p-3">
+                            <p class="text-xs font-medium text-indigo-400 mb-1">Preview:</p>
+                            <p class="text-sm font-mono text-white" x-text="preview"></p>
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            Update Domain Configuration
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <!-- GitHub Webhook -->
             <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden" x-data="{ 
                 showWebhook: false,
