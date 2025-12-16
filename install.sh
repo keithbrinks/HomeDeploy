@@ -162,10 +162,22 @@ systemctl enable homedeploy
 systemctl enable homedeploy-queue
 systemctl restart homedeploy
 systemctl restart homedeploy-queue
-MySQL Root Password: $MYSQL_CRED_FILE"
-echo -e "Please save these credentials securely
-echo -e "${GREEN}Installation Complete!${NC}"
-echo -e "Access at: http://localhost:8080"
-echo -e "Email: admin@localhost"
-echo -e "Password: $PASSWORD"
-echo -e "Please save this password."
+
+echo ""
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}    Installation Complete!${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo ""
+echo -e "${BLUE}Access HomeDeploy:${NC}"
+echo -e "  URL: http://localhost:8080"
+echo ""
+echo -e "${BLUE}Admin Credentials:${NC}"
+echo -e "  Email:    admin@localhost"
+echo -e "  Password: ${GREEN}$PASSWORD${NC}"
+echo ""
+echo -e "${BLUE}MySQL Root Credentials:${NC}"
+echo -e "  Location: ${GREEN}$MYSQL_CRED_FILE${NC}"
+echo -e "  Password: ${GREEN}$MYSQL_ROOT_PASSWORD${NC}"
+echo ""
+echo -e "${YELLOW}⚠️  IMPORTANT: Save these credentials securely!${NC}"
+echo ""
