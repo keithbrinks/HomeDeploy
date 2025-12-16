@@ -111,6 +111,15 @@ if [ ! -f .env ]; then
     echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD" >> .env
 fi
 
+# Set proper permissions
+echo -e "${BLUE}Setting permissions...${NC}"
+chown -R www-data:www-data $INSTALL_DIR
+chmod -R 755 $INSTALL_DIR
+chmod -R 775 $INSTALL_DIR/storage
+chmod -R 775 $INSTALL_DIR/bootstrap/cache
+chmod 775 $INSTALL_DIR/database
+chmod 664 $INSTALL_DIR/database/database.sqlite
+
 # Run Migrations
 echo -e "${BLUE}Running migrations...${NC}"
 php artisan migrate --force
