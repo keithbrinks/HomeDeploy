@@ -84,7 +84,9 @@ class RunDeploymentAction
             ->timeout(600)
             ->env([
                 'npm_config_cache' => $npmCachePath,
-                'HOME' => $path, // Prevents npm from using /var/www
+                'npm_config_prefix' => $npmCachePath,
+                'HOME' => $path,
+                'NPM_CONFIG_CACHE' => $npmCachePath,
             ])
             ->run($command, function (string $type, string $output) use ($deployment) {
                 $this->log($deployment, $output);
