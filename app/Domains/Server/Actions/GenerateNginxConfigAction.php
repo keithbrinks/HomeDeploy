@@ -12,7 +12,9 @@ class GenerateNginxConfigAction
 {
     public function execute(Site $site): string
     {
-        $serverName = $site->getFullDomain();
+        // Get domain without http:// prefix for server_name
+        $fullDomain = $site->getFullDomain();
+        $serverName = str_replace(['http://', 'https://'], '', $fullDomain);
         $siteName = $site->name;
         
         $config = <<<NGINX
