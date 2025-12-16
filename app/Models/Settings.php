@@ -75,9 +75,9 @@ class Settings extends Model
     public function getSiteDomain(string $siteName, string $domainStrategy, ?string $customDomain = null): string
     {
         return match ($domainStrategy) {
-            'subdomain' => "{$siteName}.{$this->base_domain}",
+            'subdomain' => $this->base_domain ? "{$siteName}.{$this->base_domain}" : "{$siteName}.example.com",
             'custom' => $customDomain ?? $siteName,
-            default => "{$siteName}.{$this->base_domain}",
+            default => $this->base_domain ? "{$siteName}.{$this->base_domain}" : "{$siteName}.example.com",
         };
     }
 }

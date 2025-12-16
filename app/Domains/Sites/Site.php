@@ -78,7 +78,7 @@ class Site extends Model
         $settings = \App\Models\Settings::get();
         return 'http://' . $settings->getSiteDomain(
             $this->name,
-            $this->domain_strategy ?? 'ip',
+            $this->domain_strategy ?? 'subdomain',
             null
         );
     }

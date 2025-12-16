@@ -172,4 +172,5 @@ class DatabasesController extends Controller
             ]);
             return back()->with('error', 'Failed to sync credentials: ' . $e->getMessage());
         }
-    }}
+    }
+}

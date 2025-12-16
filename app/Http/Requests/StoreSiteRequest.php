@@ -58,6 +58,7 @@ class StoreSiteRequest extends FormRequest
                 'max:65535',
             ],
             'domain' => [
+                'required_if:domain_strategy,custom',
                 'nullable',
                 'string',
                 'max:255',
@@ -80,6 +81,7 @@ class StoreSiteRequest extends FormRequest
             'branch.regex' => 'The branch name contains invalid characters.',
             'deploy_path.regex' => 'The deployment path must be a valid absolute path.',
             'port.min' => 'Port must be greater than 1024 (privileged ports not allowed).',
+            'domain.required_if' => 'A custom domain is required when using custom domain strategy.',
             'domain.regex' => 'The domain name is not valid.',
         ];
     }
