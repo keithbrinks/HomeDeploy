@@ -14,10 +14,10 @@ class Settings extends Model
         'github_redirect_uri',
         'github_token',
         'github_user',
-        'server_ip',
-        'default_domain',
-        'local_domain_suffix',
         'homedeploy_domain',
+        'server_ip',
+        'sites_base_domain',
+        'sites_local_suffix',
         'cloudflare_tunnel_token',
         'cloudflare_tunnel_id',
         'cloudflare_tunnel_enabled',
@@ -78,8 +78,8 @@ class Settings extends Model
     {
         return match ($domainStrategy) {
             'ip' => $this->getServerIp() ?? 'localhost',
-            'subdomain' => "{$siteName}.{$this->default_domain}",
-            'local' => "{$siteName}{$this->local_domain_suffix}",
+            'subdomain' => "{$siteName}.{$this->sites_base_domain}",
+            'local' => "{$siteName}{$this->sites_local_suffix}",
             'custom' => $customDomain ?? $siteName,
             default => $siteName,
         };

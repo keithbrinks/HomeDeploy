@@ -24,10 +24,10 @@ class SettingsController extends Controller
             'github_client_id' => ['nullable', 'string', 'max:255'],
             'github_client_secret' => ['nullable', 'string', 'max:255'],
             'github_redirect_uri' => ['nullable', 'string', 'url', 'max:255'],
-            'server_ip' => ['nullable', 'string', 'ip'],
-            'default_domain' => ['nullable', 'string', 'max:255'],
-            'local_domain_suffix' => ['nullable', 'string', 'max:50'],
             'homedeploy_domain' => ['nullable', 'string', 'max:255'],
+            'server_ip' => ['nullable', 'string', 'ip'],
+            'sites_base_domain' => ['nullable', 'string', 'max:255'],
+            'sites_local_suffix' => ['nullable', 'string', 'max:50'],
             'cloudflare_tunnel_token' => ['nullable', 'string'],
         ]);
         

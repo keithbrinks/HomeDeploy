@@ -236,8 +236,8 @@
                 strategy: '{{ $site->domain_strategy ?? 'ip' }}',
                 customDomain: '{{ $site->domain ?? '' }}',
                 serverIp: '{{ app(\App\Models\Settings::class)->first()?->server_ip ?? '' }}',
-                defaultDomain: '{{ app(\App\Models\Settings::class)->first()?->default_domain ?? '' }}',
-                localSuffix: '{{ app(\App\Models\Settings::class)->first()?->local_domain_suffix ?? '.local' }}',
+                defaultDomain: '{{ app(\App\Models\Settings::class)->first()?->sites_base_domain ?? '' }}',
+                localSuffix: '{{ app(\App\Models\Settings::class)->first()?->sites_local_suffix ?? '.local' }}',
                 get preview() {
                     switch(this.strategy) {
                         case 'ip': return 'http://' + this.serverIp;

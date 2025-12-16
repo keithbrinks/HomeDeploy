@@ -146,9 +146,44 @@
             </form>
         </div>
 
-        <!-- Server Configuration -->
+        <!-- HomeDeploy Configuration -->
         <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold text-white mb-6">Server Configuration</h2>
+            <h2 class="text-lg font-semibold text-white mb-2">HomeDeploy Configuration</h2>
+            <p class="text-sm text-slate-400 mb-6">Settings for accessing this HomeDeploy installation</p>
+            
+            <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+                
+                <!-- HomeDeploy Domain -->
+                <div>
+                    <label for="homedeploy_domain" class="block text-sm font-medium text-slate-300 mb-2">HomeDeploy Domain</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="homedeploy_domain" id="homedeploy_domain"
+                               value="{{ old('homedeploy_domain', $settings->homedeploy_domain) }}"
+                               class="flex-1 bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                               placeholder="homedeploy.local">
+                        <button type="button"
+                                onclick="if(confirm('Regenerate HomeDeploy Nginx config with this domain?')) { fetch('{{ route('settings.regenerate-nginx') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => location.reload()); }"
+                                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap">
+                            Update Nginx
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">Domain for accessing this HomeDeploy control panel (not your deployed sites)</p>
+                </div>
+                
+                <div class="flex justify-end pt-4 border-t border-slate-700">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                        Save Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Deployed Sites Configuration -->
+        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-semibold text-white mb-2">Deployed Sites Configuration</h2>
+            <p class="text-sm text-slate-400 mb-6">Default settings for sites you deploy through HomeDeploy</p>
             
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
                 @csrf
@@ -164,53 +199,36 @@
                                placeholder="192.168.1.106">
                         <button type="button" 
                                 onclick="detectServerIp()"
-                                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap">
                             Auto-Detect
                         </button>
                     </div>
-                    <p class="mt-1 text-xs text-slate-500">Your server's public or local IP address</p>
+                    <p class="mt-1 text-xs text-slate-500">Used for <strong>IP strategy</strong> - sites accessed directly via IP address</p>
                 </div>
                 
-                <!-- Default Domain -->
+                <!-- Sites Base Domain -->
                 <div>
-                    <label for="default_domain" class="block text-sm font-medium text-slate-300 mb-2">Default Domain</label>
-                    <input type="text" name="default_domain" id="default_domain"
-                           value="{{ old('default_domain', $settings->default_domain) }}"
+                    <label for="sites_base_domain" class="block text-sm font-medium text-slate-300 mb-2">Base Domain for Sites</label>
+                    <input type="text" name="sites_base_domain" id="sites_base_domain"
+                           value="{{ old('sites_base_domain', $settings->sites_base_domain) }}"
                            class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                            placeholder="example.com">
-                    <p class="mt-1 text-xs text-slate-500">Sites will be created as subdomain.example.com</p>
+                    <p class="mt-1 text-xs text-slate-500">Used for <strong>Subdomain strategy</strong> - sites created as <code class="text-indigo-400">sitename.example.com</code></p>
                 </div>
                 
-                <!-- Local Domain Suffix -->
+                <!-- Sites Local Suffix -->
                 <div>
-                    <label for="local_domain_suffix" class="block text-sm font-medium text-slate-300 mb-2">Local Domain Suffix</label>
-                    <input type="text" name="local_domain_suffix" id="local_domain_suffix"
-                           value="{{ old('local_domain_suffix', $settings->local_domain_suffix ?? '.local') }}"
+                    <label for="sites_local_suffix" class="block text-sm font-medium text-slate-300 mb-2">Local Development Suffix</label>
+                    <input type="text" name="sites_local_suffix" id="sites_local_suffix"
+                           value="{{ old('sites_local_suffix', $settings->sites_local_suffix ?? '.local') }}"
                            class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                            placeholder=".local">
-                    <p class="mt-1 text-xs text-slate-500">Suffix for local development domains (e.g., sitename.local)</p>
-                </div>
-
-                <!-- HomeDeploy Domain -->
-                <div>
-                    <label for="homedeploy_domain" class="block text-sm font-medium text-slate-300 mb-2">HomeDeploy Domain</label>
-                    <div class="flex gap-2">
-                        <input type="text" name="homedeploy_domain" id="homedeploy_domain"
-                               value="{{ old('homedeploy_domain', $settings->homedeploy_domain) }}"
-                               class="flex-1 bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                               placeholder="homedeploy.local">
-                        <button type="button"
-                                onclick="if(confirm('Regenerate HomeDeploy Nginx config with this domain?')) { fetch('{{ route('settings.regenerate-nginx') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => location.reload()); }"
-                                class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                            Update Nginx
-                        </button>
-                    </div>
-                    <p class="mt-1 text-xs text-slate-500">Domain for accessing this HomeDeploy installation</p>
+                    <p class="mt-1 text-xs text-slate-500">Used for <strong>Local strategy</strong> - sites created as <code class="text-indigo-400">sitename.local</code> with automatic /etc/hosts entry</p>
                 </div>
                 
-                <div class="flex justify-end pt-4">
+                <div class="flex justify-end pt-4 border-t border-slate-700">
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
-                        Save Server Settings
+                        Save Configuration
                     </button>
                 </div>
             </form>

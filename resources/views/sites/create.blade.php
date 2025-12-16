@@ -142,13 +142,13 @@
                     <!-- Subdomain -->
                     <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
                            :class="strategy === 'subdomain' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
-                        <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="mt-1 text-indigo-600" {{ $settings->default_domain ? '' : 'disabled' }}>
+                        <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="mt-1 text-indigo-600" {{ $settings->sites_base_domain ? '' : 'disabled' }}>
                         <div class="ml-3 flex-1">
                             <p class="text-sm font-medium text-white">Subdomain</p>
-                            @if($settings->default_domain)
-                                <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}.{{ $settings->default_domain }}`"></span></p>
+                            @if($settings->sites_base_domain)
+                                <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}.{{ $settings->sites_base_domain }}`"></span></p>
                             @else
-                                <p class="text-xs text-amber-400 mt-1">Set default domain in Settings first</p>
+                                <p class="text-xs text-amber-400 mt-1">Set base domain in Settings first</p>
                             @endif
                         </div>
                     </label>
@@ -159,7 +159,7 @@
                         <input type="radio" name="domain_strategy" value="local" x-model="strategy" class="mt-1 text-indigo-600">
                         <div class="ml-3 flex-1">
                             <p class="text-sm font-medium text-white">Local Domain</p>
-                            <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}{{ $settings->local_domain_suffix }}`"></span></p>
+                            <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}{{ $settings->sites_local_suffix }}`"></span></p>
                             <p class="text-xs text-slate-500 mt-1">Automatically adds /etc/hosts entry</p>
                         </div>
                     </label>
@@ -184,8 +184,8 @@
                     <p class="text-xs font-medium text-slate-400 mb-1">Site will be accessible at:</p>
                     <p class="text-sm font-mono text-white" x-text="
                         strategy === 'ip' ? '{{ $settings->server_ip ?: 'Set IP in Settings' }}' :
-                        strategy === 'subdomain' ? `${siteName}.{{ $settings->default_domain ?: 'domain.com' }}` :
-                        strategy === 'local' ? `${siteName}{{ $settings->local_domain_suffix }}` :
+                        strategy === 'subdomain' ? `${siteName}.{{ $settings->sites_base_domain ?: 'domain.com' }}` :
+                        strategy === 'local' ? `${siteName}{{ $settings->sites_local_suffix }}` :
                         strategy === 'custom' ? (customDomain || 'Enter custom domain') : ''
                     "></p>
                 </div>
