@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GithubController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BuildCommandsController;
 use App\Http\Controllers\CloudflareController;
+use App\Http\Controllers\CloudflareTunnelController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabasesController;
 use App\Http\Controllers\DeploymentLogsController;
@@ -76,6 +77,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
     Route::get('/settings/test-github', [SettingsController::class, 'testGithub'])->name('settings.test-github');
     Route::post('/settings/regenerate-nginx', [SettingsController::class, 'regenerateNginx'])->name('settings.regenerate-nginx');
+    Route::post('/settings/tunnel/start', [CloudflareTunnelController::class, 'start'])->name('settings.tunnel.start');
+    Route::post('/settings/tunnel/stop', [CloudflareTunnelController::class, 'stop'])->name('settings.tunnel.stop');
     Route::post('/system/update', [SystemUpdateController::class, 'update'])->name('system.update.perform');
 
     Route::get('/auth/github', [GithubController::class, 'redirect'])->name('auth.github');

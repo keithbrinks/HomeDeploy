@@ -257,24 +257,56 @@
 
             <div class="bg-slate-900 rounded-md p-4 mb-6">
                 <h3 class="text-sm font-medium text-white mb-3">Setup Instructions</h3>
-                <ol class="space-y-2 text-sm text-slate-300">
+                <ol class="space-y-3 text-sm text-slate-300">
                     <li class="flex items-start">
                         <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">1</span>
-                        <span>Install cloudflared: <code class="text-xs bg-slate-800 px-2 py-1 rounded">curl -L https://cloudflared.pages.dev | sudo bash</code></span>
+                        <div class="flex-1">
+                            <p class="mb-1">Install cloudflared on your server:</p>
+                            <code class="text-xs bg-slate-800 px-2 py-1 rounded block">wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && sudo dpkg -i cloudflared-linux-amd64.deb</code>
+                        </div>
                     </li>
                     <li class="flex items-start">
                         <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">2</span>
-                        <span>Login: <code class="text-xs bg-slate-800 px-2 py-1 rounded">cloudflared tunnel login</code></span>
+                        <div class="flex-1">
+                            <p class="mb-1">Login to Cloudflare (opens browser):</p>
+                            <code class="text-xs bg-slate-800 px-2 py-1 rounded block">sudo cloudflared tunnel login</code>
+                        </div>
                     </li>
                     <li class="flex items-start">
                         <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">3</span>
-                        <span>Create tunnel: <code class="text-xs bg-slate-800 px-2 py-1 rounded">cloudflared tunnel create homedeploy</code></span>
+                        <div class="flex-1">
+                            <p class="mb-1">Create a tunnel named "homedeploy":</p>
+                            <code class="text-xs bg-slate-800 px-2 py-1 rounded block">sudo cloudflared tunnel create homedeploy</code>
+                            <p class="text-xs text-slate-500 mt-1">This will create <code class="text-indigo-400">/root/.cloudflared/&lt;TUNNEL_ID&gt;.json</code></p>
+                        </div>
                     </li>
                     <li class="flex items-start">
                         <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">4</span>
-                        <span>Copy the tunnel token from the credentials file</span>
+                        <div class="flex-1">
+                            <p class="mb-1">Get the tunnel ID (save this for below):</p>
+                            <code class="text-xs bg-slate-800 px-2 py-1 rounded block">sudo cloudflared tunnel list</code>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">5</span>
+                        <div class="flex-1">
+                            <p class="mb-1">Copy the entire contents of the tunnel credentials file:</p>
+                            <code class="text-xs bg-slate-800 px-2 py-1 rounded block">sudo cat /root/.cloudflared/&lt;TUNNEL_ID&gt;.json</code>
+                            <p class="text-xs text-slate-500 mt-1">Paste the entire JSON content in the Tunnel Token field below</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">6</span>
+                        <div class="flex-1">
+                            <p>Enter the Tunnel ID and credentials below, save configuration, then click "Start Tunnel"</p>
+                        </div>
                     </li>
                 </ol>
+                <div class="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded">
+                    <p class="text-xs text-amber-300">
+                        <strong>Note:</strong> HomeDeploy will automatically create the config file and systemd service. You only need to install cloudflared and create the tunnel manually.
+                    </p>
+                </div>
             </div>
 
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-4">
@@ -282,10 +314,19 @@
                 @method('PUT')
                 
                 <div>
-                    <label for="cloudflare_tunnel_token" class="block text-sm font-medium text-slate-300 mb-2">Tunnel Token</label>
-                    <input type="password" name="cloudflare_tunnel_token" id="cloudflare_tunnel_token"
-                           value="{{ old('cloudflare_tunnel_token') }}"
+                    <label for="cloudflare_tunnel_id" class="block text-sm font-medium text-slate-300 mb-2">Tunnel ID</label>
+                    <input type="text" name="cloudflare_tunnel_id" id="cloudflare_tunnel_id"
+                           value="{{ old('cloudflare_tunnel_id', $settings->cloudflare_tunnel_id) }}"
                            class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-sm"
+                           placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                    <p class="mt-1 text-xs text-slate-500">From the output of <code class="text-indigo-400">cloudflared tunnel list</code></p>
+                </div>
+                
+                <div>
+                    <label for="cloudflare_tunnel_token" class="block text-sm font-medium text-slate-300 mb-2">Tunnel Credentials (JSON)</label>
+                    <textarea name="cloudflare_tunnel_token" id="cloudflare_tunnel_token" rows="6"
+                           class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-xs"
+                           placeholder='{"AccountTag":"...","TunnelSecret":"...","TunnelID":"..."}'></textarea>
                            placeholder="{{ $settings->cloudflare_tunnel_token ? 'Leave blank to keep current token' : 'eyJh...' }}">
                     @if($settings->cloudflare_tunnel_token)
                         <p class="mt-1 text-xs text-slate-500">Leave blank to keep the current token</p>
@@ -296,17 +337,23 @@
                     @if($settings->hasCloudflare())
                         <div class="flex gap-2">
                             @if(!$settings->cloudflare_tunnel_enabled)
-                                <button type="button" 
-                                        onclick="startTunnel()"
-                                        class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                                    Start Tunnel
-                                </button>
+                                <form action="{{ route('settings.tunnel.start') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" 
+                                            onclick="return confirm('Start Cloudflare Tunnel?')"
+                                            class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Start Tunnel
+                                    </button>
+                                </form>
                             @else
-                                <button type="button"
-                                        onclick="stopTunnel()"
-                                        class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                                    Stop Tunnel
-                                </button>
+                                <form action="{{ route('settings.tunnel.stop') }}" method="POST">
+                                    @csrf
+                                    <button type="submit"
+                                            onclick="return confirm('Stop Cloudflare Tunnel?')"
+                                            class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        Stop Tunnel
+                                    </button>
+                                </form>
                             @endif
                         </div>
                     @endif
@@ -363,16 +410,6 @@
         async function loadHostsFile() {
             // TODO: Implement API endpoint to fetch hosts file content
             document.getElementById('hosts-content').textContent = '# Will display hosts entries here';
-        }
-
-        async function startTunnel() {
-            // TODO: Implement tunnel start
-            alert('Tunnel management coming soon');
-        }
-
-        async function stopTunnel() {
-            // TODO: Implement tunnel stop
-            alert('Tunnel management coming soon');
         }
 
         // Load hosts on page load

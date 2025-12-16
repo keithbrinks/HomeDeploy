@@ -28,6 +28,7 @@ class SettingsController extends Controller
             'server_ip' => ['nullable', 'string', 'ip'],
             'sites_base_domain' => ['nullable', 'string', 'max:255'],
             'sites_local_suffix' => ['nullable', 'string', 'max:50'],
+            'cloudflare_tunnel_id' => ['nullable', 'string', 'max:255'],
             'cloudflare_tunnel_token' => ['nullable', 'string'],
         ]);
         
