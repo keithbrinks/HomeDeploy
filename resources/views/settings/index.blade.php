@@ -343,3 +343,4 @@
         // Load hosts on page load
         document.addEventListener('DOMContentLoaded', loadHostsFile);
     </script>
+</x-layouts.app>
