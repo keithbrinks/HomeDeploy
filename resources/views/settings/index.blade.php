@@ -384,35 +384,40 @@
                     @endif
                 </div>
 
-                <div class="flex items-center justify-between pt-4">
-                    @if($settings->hasCloudflare())
-                        <div class="flex gap-2">
-                            @if(!$settings->cloudflare_tunnel_enabled)
-                                <form action="{{ route('settings.tunnel.start') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" 
-                                            onclick="return confirm('Start Cloudflare Tunnel?')"
-                                            class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                                        Start Tunnel
-                                    </button>
-                                </form>
-                            @else
-                                <form action="{{ route('settings.tunnel.stop') }}" method="POST">
-                                    @csrf
-                                    <button type="submit"
-                                            onclick="return confirm('Stop Cloudflare Tunnel?')"
-                                            class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                                        Stop Tunnel
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    @endif
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors ml-auto">
-                        Save Tunnel Configuration
+                <div class="flex items-center justify-end pt-4">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                        Save Configuration
                     </button>
                 </div>
             </form>
+            
+            <!-- Tunnel Control (outside settings form) -->
+            @if($settings->hasCloudflare())
+                <div class="mt-4 flex justify-between items-center">
+                    <div></div>
+                    <div class="flex gap-2">
+                        @if(!$settings->cloudflare_tunnel_enabled)
+                            <form action="{{ route('settings.tunnel.start') }}" method="POST">
+                                @csrf
+                                <button type="submit" 
+                                        onclick="return confirm('Start Cloudflare Tunnel?')"
+                                        class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                    Start Tunnel
+                                </button>
+                            </form>
+                        @else
+                            <form action="{{ route('settings.tunnel.stop') }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                        onclick="return confirm('Stop Cloudflare Tunnel?')"
+                                        class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                    Stop Tunnel
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
