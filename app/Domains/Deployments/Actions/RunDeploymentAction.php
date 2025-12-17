@@ -37,6 +37,13 @@ class RunDeploymentAction
                     if ($mkdirResult->failed()) {
                         throw new \RuntimeException("Failed to create directory: " . $mkdirResult->errorOutput());
                     }
+                } else {
+                    // Directory exists but is not a git repo - clear it first
+                    $this->log($deployment, "Directory exists but is not a git repository. Clearing...");
+                    $clearResult = Process::run("sudo rm -rf '$path'/*");
+                    if ($clearResult->failed()) {
+                        throw new \RuntimeException("Failed to clear directory: " . $clearResult->errorOutput());
+                    }
                 }
                 
                 // Set ownership to www-data
