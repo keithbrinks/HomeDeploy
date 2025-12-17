@@ -33,16 +33,24 @@ class CloudflareTunnelController extends Controller
 
         try {
             // Generate config file
+            \Illuminate\Support\Facades\Log::info('Starting Cloudflare Tunnel setup...');
             $this->generateConfig($settings);
+            \Illuminate\Support\Facades\Log::info('Config file generated successfully');
             
             // Create systemd service if it doesn't exist
             $this->createSystemdService();
+            \Illuminate\Support\Facades\Log::info('Systemd service created successfully');
             
             // Start the service
             $result = Process::run('sudo systemctl start cloudflared-tunnel');
             if ($result->failed()) {
-                throw new \RuntimeException('Failed to start tunnel: ' . $result->errorOutput());
+                \Illuminate\Support\Facades\Log::error('Failed to start tunnel service', [
+                    'output' => $result->output(),
+                    'error' => $result->errorOutput()
+                ]);
+                throw new \RuntimeException('Failed to start tunnel service: ' . ($result->errorOutput() ?: $result->output()));
             }
+            \Illuminate\Support\Facades\Log::info('Tunnel service started');
             
             // Enable on boot
             Process::run('sudo systemctl enable cloudflared-tunnel');
@@ -58,7 +66,10 @@ class CloudflareTunnelController extends Controller
             if (!$isRunning) {
                 // Get detailed status for error message
                 $statusDetails = Process::run('sudo systemctl status cloudflared-tunnel');
-                throw new \RuntimeException('Tunnel service failed to start. Check logs with: sudo journalctl -u cloudflared-tunnel -n 50');
+                \Illuminate\Support\Facades\Log::error('Tunnel service not running after start', [
+                    'status' => $statusDetails->output()
+                ]);
+                throw new \RuntimeException('Tunnel service failed to start. Check logs: sudo journalctl -u cloudflared-tunnel -n 50');
             }
             
             return redirect()
@@ -112,12 +123,18 @@ class CloudflareTunnelController extends Controller
         File::put($tempCredentials, $settings->cloudflare_tunnel_token);
         
         // Create directory and copy credentials
-        Process::run("sudo mkdir -p $credentialsDir");
+        $mkdirResult = Process::run("sudo mkdir -p $credentialsDir");
+        \Illuminate\Support\Facades\Log::info('Created credentials directory', ['result' => $mkdirResult->output()]);
+        
         $result = Process::run("sudo cp '$tempCredentials' '$credentialsFile'");
         File::delete($tempCredentials);
         
         if ($result->failed()) {
-            throw new \RuntimeException('Failed to save credentials: ' . $result->errorOutput());
+            \Illuminate\Support\Facades\Log::error('Failed to copy credentials', [
+                'output' => $result->output(),
+                'error' => $result->errorOutput()
+            ]);
+            throw new \RuntimeException('Failed to save credentials: ' . ($result->errorOutput() ?: 'Unknown error'));
         }
 
         // Generate config.yml
@@ -142,16 +159,22 @@ YAML;
         File::put($tempPath, $configContent);
         
         // Create directory if it doesn't exist
-        Process::run('sudo mkdir -p /etc/cloudflared');
+        $mkdirResult = Process::run('sudo mkdir -p /etc/cloudflared');
+        \Illuminate\Support\Facades\Log::info('Created config directory', ['result' => $mkdirResult->output()]);
         
         // Copy config
         $result = Process::run("sudo cp '$tempPath' '$configPath'");
         if ($result->failed()) {
             File::delete($tempPath);
-            throw new \RuntimeException('Failed to write config: ' . $result->errorOutput());
+            \Illuminate\Support\Facades\Log::error('Failed to copy config', [
+                'output' => $result->output(),
+                'error' => $result->errorOutput()
+            ]);
+            throw new \RuntimeException('Failed to write config: ' . ($result->errorOutput() ?: 'Unknown error'));
         }
         
         File::delete($tempPath);
+        \Illuminate\Support\Facades\Log::info('Config file created at ' . $configPath);
     }
     
     private function createSystemdService(): void
@@ -176,16 +199,23 @@ SERVICE;
         $tempPath = storage_path('app/cloudflared-tunnel.service');
         
         File::put($tempPath, $serviceContent);
+        \Illuminate\Support\Facades\Log::info('Created temp service file at ' . $tempPath);
         
         $result = Process::run("sudo cp '$tempPath' '$servicePath'");
         if ($result->failed()) {
             File::delete($tempPath);
-            throw new \RuntimeException('Failed to create service: ' . $result->errorOutput());
+            \Illuminate\Support\Facades\Log::error('Failed to copy service file', [
+                'output' => $result->output(),
+                'error' => $result->errorOutput()
+            ]);
+            throw new \RuntimeException('Failed to create service: ' . ($result->errorOutput() ?: 'Permission denied. Check sudo configuration.'));
         }
         
         File::delete($tempPath);
+        \Illuminate\Support\Facades\Log::info('Service file created at ' . $servicePath);
         
         // Reload systemd
-        Process::run('sudo systemctl daemon-reload');
+        $reloadResult = Process::run('sudo systemctl daemon-reload');
+        \Illuminate\Support\Facades\Log::info('Systemd daemon reloaded', ['output' => $reloadResult->output()]);
     }
 }
