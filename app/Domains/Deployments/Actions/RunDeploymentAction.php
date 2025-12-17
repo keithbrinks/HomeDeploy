@@ -42,16 +42,27 @@ class RunDeploymentAction
                 // Ensure clean directory
                 if (is_dir($path)) {
                     // Directory exists but is not a git repo - remove it
-                    $this->log($deployment, "Removing non-git directory...");
-                    $removeResult = Process::run("sudo rm -rf '$path'");
+                    $this->log($deployment, "Removing non-git directory: $path");
+                    $removeResult = Process::run("sudo rm -rfv '$path'");
+                    $this->log($deployment, "Remove output: " . $removeResult->output());
+                    
                     if ($removeResult->failed()) {
                         throw new \RuntimeException("Failed to remove directory: " . $removeResult->errorOutput());
                     }
                     
+                    // Wait a moment for filesystem
+                    usleep(100000); // 100ms
+                    clearstatcache(true, $path);
+                    
                     // Verify it's actually gone
                     if (is_dir($path)) {
-                        throw new \RuntimeException("Directory still exists after removal attempt. Please manually remove: $path");
+                        // Try to see what's in it
+                        $lsResult = Process::run("ls -la '$path'");
+                        $this->log($deployment, "Directory still exists! Contents: " . $lsResult->output());
+                        throw new \RuntimeException("Directory still exists after removal. Manual intervention required.");
                     }
+                    
+                    $this->log($deployment, "Directory successfully removed.");
                 }
                 
                 // Create fresh directory
