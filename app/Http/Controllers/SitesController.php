@@ -69,20 +69,17 @@ class SitesController extends Controller
             $data = $request->validated();
             $settings = \App\Models\Settings::get();
             
-            // Validate base_domain is set when using subdomain strategy
-            if ($data['domain_strategy'] === 'subdomain' && !$settings->base_domain) {
+            // Validate base_domain is set
+            if (!$settings->base_domain) {
                 return back()
                     ->withInput()
-                    ->with('error', 'Please configure a base domain in Settings before using subdomain strategy.');
+                    ->with('error', 'Please configure a base domain in Settings first.');
             }
             
-            // Set the domain based on the selected strategy
-            $customDomain = ($data['domain_strategy'] === 'custom') ? $data['domain'] : null;
-            $data['domain'] = $settings->getSiteDomain(
-                $data['name'],
-                $data['domain_strategy'],
-                $customDomain
-            );
+            // Build full domain from subdomain prefix + base domain
+            $fullDomain = $data['domain'] . '.' . $settings->base_domain;
+            $data['domain'] = $fullDomain;
+            $data['domain_strategy'] = 'subdomain';
             
             $site = Site::create($data);
 

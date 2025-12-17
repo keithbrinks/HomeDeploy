@@ -47,11 +47,21 @@
             selectedRepo: null,
             branches: [],
             loadingBranches: false,
+            updateDomainSuggestion() {
+                const name = $refs.nameInput?.value || '';
+                const suggested = name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '');
+                $refs.domainInput.value = suggested;
+            },
             async selectRepo(repo) {
                 this.selectedRepo = repo;
                 $refs.nameInput.value = repo.name;
                 $refs.repoUrlInput.value = repo.clone_url;
                 $refs.deployPathInput.value = '/var/www/' + repo.name;
+                
+                // Update domain suggestion
+                this.updateDomainSuggestion();
                 
                 // Fetch branches
                 this.loadingBranches = true;
@@ -107,7 +117,29 @@
 
             <div>
                 <label for="name" class="block text-sm font-medium text-slate-300">Site Name</label>
-                <input type="text" name="name" id="name" x-ref="nameInput" required class="mt-1 block w-full rounded-md bg-slate-800 border-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" 
+                       name="name" 
+                       id="name" 
+                       x-ref="nameInput"
+                       @input="updateDomainSuggestion()" 
+                       required 
+                       class="mt-1 block w-full rounded-md bg-slate-800 border-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <p class="text-xs text-slate-500 mt-1">Display name for your site</p>
+            </div>
+
+            <div>
+                <label for="domain" class="block text-sm font-medium text-slate-300">Subdomain</label>
+                <div class="mt-1 flex rounded-md shadow-sm">
+                    <input type="text" 
+                           name="domain" 
+                           id="domain" 
+                           x-ref="domainInput"
+                           required 
+                           placeholder="my"
+                           class="block w-full rounded-l-md bg-slate-800 border-slate-700 text-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-700 bg-slate-900 text-slate-400 sm:text-sm">.{{ $settings->base_domain ?: 'keithbrinks.app' }}</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">Your site will be accessible at this subdomain</p>
             </div>
 
             <div>
@@ -123,59 +155,7 @@
                             <option :value="branch.name" x-text="branch.name"></option>
                         </template>
                     </select>
-                </template>
-                <template x-if="branches.length === 0">
-                    <input type="text" name="branch" id="branch" x-ref="branchInput" value="main" required class="mt-1 block w-full rounded-md bg-slate-800 border-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                </template>
-                <p x-show="loadingBranches" class="text-xs text-slate-500 mt-1">Loading branches...</p>
-            </div>
-
-            <div>
-                <label for="deploy_path" class="block text-sm font-medium text-slate-300">Deployment Path</label>
-                <input type="text" name="deploy_path" id="deploy_path" x-ref="deployPathInput" required placeholder="/var/www/mysite" class="mt-1 block w-full rounded-md bg-slate-800 border-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-            </div>
-
-            <!-- Domain Configuration -->
-            <div x-data="{
-                strategy: 'subdomain',
-                customDomain: '',
-                siteName: '',
-                updatePreview() {
-                    this.siteName = $refs.nameInput?.value || 'sitename';
-                }
-            }" @input.window="updatePreview()">
-                <label class="block text-sm font-medium text-slate-300 mb-3">Domain Configuration</label>
-                
-                <div class="space-y-3">
-                    <!-- Subdomain -->
-                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
-                           :class="strategy === 'subdomain' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
-                        <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="mt-1 text-indigo-600" {{ $settings->base_domain ? '' : 'disabled' }}>
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-white">Subdomain (Recommended)</p>
-                            @if($settings->base_domain)
-                                <p class="text-xs text-slate-400 mt-1">Access via: <span class="font-mono" x-text="`${siteName}.{{ $settings->base_domain }}`"></span></p>
-                            @else
-                                <p class="text-xs text-amber-400 mt-1">Set base domain in Settings first</p>
-                            @endif
-                        </div>
-                    </label>
-
-                    <!-- Custom Domain -->
-                    <label class="flex items-start p-4 border rounded-lg cursor-pointer transition-colors"
-                           :class="strategy === 'custom' ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'">
-                        <input type="radio" name="domain_strategy" value="custom" x-model="strategy" class="mt-1 text-indigo-600">
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-white mb-2">Custom Domain</p>
-                            <input type="text" 
-                                   name="domain" 
-                                   x-model="customDomain"
-                                   :disabled="strategy !== 'custom'"
-                                   placeholder="example.com"
-                                   class="w-full rounded-md bg-slate-800 border-slate-700 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                            <p class="text-xs text-slate-500 mt-1">Configure DNS to point to {{ $settings->server_ip ?: 'your server IP' }}</p>
-                        </div>
-                    </label>
+                </  </label>
                 </div>
 
                 <div class="mt-4 p-3 bg-slate-800 rounded-md border border-slate-700">

@@ -58,16 +58,10 @@ class StoreSiteRequest extends FormRequest
                 'max:65535',
             ],
             'domain' => [
-                'required_if:domain_strategy,custom',
-                'nullable',
-                'string',
-                'max:255',
-                'regex:/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/',
-            ],
-            'domain_strategy' => [
                 'required',
                 'string',
-                Rule::in(['subdomain', 'custom']),
+                'max:255',
+                'regex:/^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?$/',
             ],
         ];
     }
@@ -81,8 +75,7 @@ class StoreSiteRequest extends FormRequest
             'branch.regex' => 'The branch name contains invalid characters.',
             'deploy_path.regex' => 'The deployment path must be a valid absolute path.',
             'port.min' => 'Port must be greater than 1024 (privileged ports not allowed).',
-            'domain.required_if' => 'A custom domain is required when using custom domain strategy.',
-            'domain.regex' => 'The domain name is not valid.',
+            'domain.regex' => 'The subdomain must be lowercase and contain only letters, numbers, and hyphens.',
         ];
     }
 }
