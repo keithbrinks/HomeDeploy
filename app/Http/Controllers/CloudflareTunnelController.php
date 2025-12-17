@@ -35,12 +35,23 @@ class CloudflareTunnelController extends Controller
             // Enable on boot
             Process::run('sudo systemctl enable cloudflared-tunnel');
             
+            // Verify service is actually running
+            sleep(2); // Give it a moment to start
+            $statusResult = Process::run('sudo systemctl is-active cloudflared-tunnel');
+            $isRunning = trim($statusResult->output()) === 'active';
+            
             // Update settings
-            $settings->update(['cloudflare_tunnel_enabled' => true]);
+            $settings->update(['cloudflare_tunnel_enabled' => $isRunning]);
+            
+            if (!$isRunning) {
+                // Get detailed status for error message
+                $statusDetails = Process::run('sudo systemctl status cloudflared-tunnel');
+                throw new \RuntimeException('Tunnel service failed to start. Check logs with: sudo journalctl -u cloudflared-tunnel -n 50');
+            }
             
             return redirect()
                 ->route('settings.index')
-                ->with('success', 'Cloudflare Tunnel started successfully');
+                ->with('success', 'Cloudflare Tunnel started successfully! Configure DNS: CNAME ' . $settings->getTunnelHostname() . ' to ' . $settings->cloudflare_tunnel_id . '.cfargotunnel.com');
                 
         } catch (\Exception $e) {
             return redirect()
@@ -98,12 +109,19 @@ class CloudflareTunnelController extends Controller
         }
 
         // Generate config.yml
+        $hostname = $settings->getTunnelHostname();
+        if (!$hostname) {
+            throw new \RuntimeException('Base domain is required. Please configure it in settings.');
+        }
+        
         $configContent = <<<YAML
 tunnel: {$settings->cloudflare_tunnel_id}
 credentials-file: {$credentialsFile}
 
 ingress:
-  - service: http://localhost:8080
+  - hostname: {$hostname}
+    service: http://localhost:8080
+  - service: http_status:404
 YAML;
         
         $configPath = '/etc/cloudflared/config.yml';

@@ -58,7 +58,14 @@ class Settings extends Model
 
     public function hasCloudflare(): bool
     {
-        return !empty($this->cloudflare_tunnel_token);
+        return !empty($this->cloudflare_tunnel_token) 
+            && !empty($this->cloudflare_tunnel_id)
+            && !empty($this->base_domain);
+    }
+    
+    public function getTunnelHostname(): ?string
+    {
+        return $this->base_domain ? "deploy.{$this->base_domain}" : null;
     }
 
     public function getServerIp(): ?string

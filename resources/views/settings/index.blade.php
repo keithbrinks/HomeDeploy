@@ -254,7 +254,13 @@
                     <li class="flex items-start">
                         <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">6</span>
                         <div class="flex-1">
-                            <p>Enter the Tunnel ID and credentials below, save configuration, then click "Start Tunnel"</p>
+                            <p class="mb-1">Add your domain to Cloudflare DNS (if not already there)</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mr-2 mt-0.5">7</span>
+                        <div class="flex-1">
+                            <p>Enter the Tunnel ID, hostname, and credentials below, save configuration, then click "Start Tunnel"</p>
                         </div>
                     </li>
                 </ol>
@@ -263,6 +269,32 @@
                         <strong>Note:</strong> HomeDeploy will automatically create the config file and systemd service. You only need to install cloudflared and create the tunnel manually.
                     </p>
                 </div>
+                
+                @if($settings->cloudflare_tunnel_enabled && $settings->getTunnelHostname())
+                <div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded">
+                    <p class="text-xs text-blue-300 font-medium mb-2">
+                        <strong>DNS Configuration Required:</strong>
+                    </p>
+                    <p class="text-xs text-blue-200 mb-2">
+                        In your Cloudflare dashboard, add this DNS record:
+                    </p>
+                    <div class="bg-slate-800 p-2 rounded font-mono text-xs">
+                        <div class="grid grid-cols-4 gap-2 text-slate-400 mb-1">
+                            <div>Type</div>
+                            <div>Name</div>
+                            <div class="col-span-2">Target</div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 text-blue-300">
+                            <div>CNAME</div>
+                            <div>{{ $settings->getTunnelHostname() }}</div>
+                            <div class="col-span-2">{{ $settings->cloudflare_tunnel_id }}.cfargotunnel.com</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">
+                        Set Proxy status to "Proxied" (orange cloud icon)
+                    </p>
+                </div>
+                @endif
             </div>
 
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-4">
@@ -286,6 +318,7 @@
                     @if($settings->cloudflare_tunnel_token)
                         <p class="mt-1 text-xs text-slate-500">Current credentials are saved (edit to update)</p>
                     @endif
+                    <p class="mt-1 text-xs text-slate-400">💡 HomeDeploy will be accessible at: <strong>deploy.{{ $settings->base_domain ?: 'yourdomain.com' }}</strong></p>
                 </div>
 
                 <div class="flex items-center justify-between pt-4">
