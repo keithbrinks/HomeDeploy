@@ -221,6 +221,22 @@
                 @endif
             </div>
 
+            @php
+                $configStatus = $settings->getTunnelConfigStatus();
+            @endphp
+            
+            @if(!$configStatus['ready'])
+            <div class="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-6">
+                <p class="text-sm text-amber-300 font-medium mb-2">⚠️ Configuration Incomplete</p>
+                <p class="text-xs text-amber-200 mb-2">Complete these steps before starting the tunnel:</p>
+                <ul class="text-xs text-amber-200 space-y-1">
+                    @foreach($configStatus['issues'] as $issue)
+                        <li>• {{ $issue }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <div class="bg-slate-900 rounded-md p-4 mb-6">
                 <h3 class="text-sm font-medium text-white mb-3">Setup Instructions</h3>
                 <ol class="space-y-3 text-sm text-slate-300">

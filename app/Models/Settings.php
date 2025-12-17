@@ -106,6 +106,49 @@ class Settings extends Model
         
         return ['status' => 'running', 'message' => 'Service is active'];
     }
+    
+    public function getTunnelConfigStatus(): array
+    {
+        $issues = [];
+        
+        if (empty($this->cloudflare_tunnel_id)) {
+            $issues[] = 'Tunnel ID is missing';
+        }
+        
+        if (empty($this->cloudflare_tunnel_token)) {
+            $issues[] = 'Tunnel credentials are missing';
+        }
+        
+        if (empty($this->base_domain)) {
+            $issues[] = 'Base domain is missing';
+        }
+        
+        // Check if config files exist
+        $configExists = file_exists('/etc/cloudflared/config.yml');
+        $serviceExists = file_exists('/etc/systemd/system/cloudflared-tunnel.service');
+        
+        if (!empty($issues)) {
+            return [
+                'ready' => false,
+                'message' => 'Configuration incomplete',
+                'issues' => $issues
+            ];
+        }
+        
+        if (!$configExists || !$serviceExists) {
+            return [
+                'ready' => true,
+                'message' => 'Ready to start (click Start Tunnel)',
+                'issues' => []
+            ];
+        }
+        
+        return [
+            'ready' => true,
+            'message' => 'Configuration complete',
+            'issues' => []
+        ];
+    }
 
     public function getServerIp(): ?string
     {

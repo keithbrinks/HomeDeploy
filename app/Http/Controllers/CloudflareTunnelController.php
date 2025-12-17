@@ -18,6 +18,18 @@ class CloudflareTunnelController extends Controller
                 ->route('settings.index')
                 ->with('error', 'Please configure Cloudflare Tunnel token first');
         }
+        
+        if (!$settings->cloudflare_tunnel_id) {
+            return redirect()
+                ->route('settings.index')
+                ->with('error', 'Please configure Tunnel ID first');
+        }
+        
+        if (!$settings->base_domain) {
+            return redirect()
+                ->route('settings.index')
+                ->with('error', 'Please configure Base Domain first. This will be the domain where HomeDeploy is accessible.');
+        }
 
         try {
             // Generate config file
