@@ -33,10 +33,10 @@ class SettingsController extends Controller
         $settings = Settings::get();
         
         // Only update secrets if new ones are provided
-        if (empty($validated['github_client_secret'])) {
+        if (!filled($validated['github_client_secret'])) {
             unset($validated['github_client_secret']);
         }
-        if (empty($validated['cloudflare_tunnel_token'])) {
+        if (!filled($validated['cloudflare_tunnel_token'])) {
             unset($validated['cloudflare_tunnel_token']);
         }
         

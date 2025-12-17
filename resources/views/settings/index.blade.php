@@ -282,9 +282,9 @@
                     <label for="cloudflare_tunnel_token" class="block text-sm font-medium text-slate-300 mb-2">Tunnel Credentials (JSON)</label>
                     <textarea name="cloudflare_tunnel_token" id="cloudflare_tunnel_token" rows="6"
                            class="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono text-xs"
-                           placeholder='{"AccountTag":"...","TunnelSecret":"...","TunnelID":"..."}'></textarea>
+                           placeholder='{"AccountTag":"...","TunnelSecret":"...","TunnelID":"..."}'>{{ old('cloudflare_tunnel_token', $settings->cloudflare_tunnel_token) }}</textarea>
                     @if($settings->cloudflare_tunnel_token)
-                        <p class="mt-1 text-xs text-slate-500">Leave blank to keep the current token</p>
+                        <p class="mt-1 text-xs text-slate-500">Current credentials are saved (edit to update)</p>
                     @endif
                 </div>
 
