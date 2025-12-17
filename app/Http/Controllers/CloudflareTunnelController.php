@@ -77,6 +77,11 @@ class CloudflareTunnelController extends Controller
                 ->with('success', 'Cloudflare Tunnel started successfully! Configure DNS: CNAME ' . $settings->getTunnelHostname() . ' to ' . $settings->cloudflare_tunnel_id . '.cfargotunnel.com');
                 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Tunnel start failed', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return redirect()
                 ->route('settings.index')
                 ->with('error', 'Failed to start tunnel: ' . $e->getMessage());
