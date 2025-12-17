@@ -43,6 +43,15 @@ class EnvironmentVariablesController extends Controller
 
         $envPath = $site->deploy_path . '/.env';
         
+        // Ensure directory exists
+        if (!is_dir($site->deploy_path)) {
+            $mkdirResult = \Illuminate\Support\Facades\Process::run("sudo mkdir -p '{$site->deploy_path}'");
+            if ($mkdirResult->failed()) {
+                return back()->with('error', 'Failed to create directory: ' . $mkdirResult->errorOutput());
+            }
+            \Illuminate\Support\Facades\Process::run("sudo chown -R www-data:www-data '{$site->deploy_path}'");
+        }
+        
         try {
             // Write to temp file first
             $tempPath = storage_path("app/env-{$site->id}.tmp");
