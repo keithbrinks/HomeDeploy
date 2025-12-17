@@ -22,15 +22,21 @@ class RunDeploymentAction
         try {
             $site = $deployment->site;
             $path = $site->deploy_path;
+            $gitDir = $path . '/.git';
 
-            // Ensure directory exists
-            if (! is_dir($path)) {
-                $this->log($deployment, "Creating directory: $path");
+            // Check if it's a git repository
+            if (! is_dir($gitDir)) {
+                // First-time deployment - need to clone
+                $this->log($deployment, "First deployment - cloning repository...");
                 
-                // Create directory with sudo to handle permissions
-                $mkdirResult = Process::run("sudo mkdir -p '$path'");
-                if ($mkdirResult->failed()) {
-                    throw new \RuntimeException("Failed to create directory: " . $mkdirResult->errorOutput());
+                // Ensure directory exists
+                if (! is_dir($path)) {
+                    $this->log($deployment, "Creating directory: $path");
+                    
+                    $mkdirResult = Process::run("sudo mkdir -p '$path'");
+                    if ($mkdirResult->failed()) {
+                        throw new \RuntimeException("Failed to create directory: " . $mkdirResult->errorOutput());
+                    }
                 }
                 
                 // Set ownership to www-data
@@ -43,7 +49,8 @@ class RunDeploymentAction
                 $cloneUrl = $this->getAuthenticatedRepoUrl($site->repo_url);
                 $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
             } else {
-                // Pull with GitHub token
+                // Subsequent deployment - pull updates
+                $this->log($deployment, "Updating existing repository...");
                 $this->updateGitRemote($deployment, $path, $site->repo_url);
                 $this->runCommand($deployment, "git pull origin {$site->branch}", $path);
             }
