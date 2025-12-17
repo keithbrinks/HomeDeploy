@@ -65,7 +65,24 @@ class Settings extends Model
     
     public function getTunnelHostname(): ?string
     {
-        return $this->base_domain ? "deploy.{$this->base_domain}" : null;
+        return $this->base_domain;
+    }
+    
+    public function getDnsRecordName(): string
+    {
+        if (!$this->base_domain) {
+            return '@';
+        }
+        
+        // If base_domain is just a domain (example.com), use @
+        // If it's a subdomain (app.example.com), extract the subdomain part
+        $parts = explode('.', $this->base_domain);
+        if (count($parts) <= 2) {
+            return '@';  // Root domain
+        }
+        
+        // Return the subdomain part (e.g., 'app' from 'app.example.com')
+        return $parts[0];
     }
 
     public function getServerIp(): ?string

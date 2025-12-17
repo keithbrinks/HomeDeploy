@@ -270,13 +270,13 @@
                     </p>
                 </div>
                 
-                @if($settings->cloudflare_tunnel_enabled && $settings->getTunnelHostname())
-                <div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded">
-                    <p class="text-xs text-blue-300 font-medium mb-2">
-                        <strong>DNS Configuration Required:</strong>
+                @if($settings->getTunnelHostname())
+                <div class="mt-4 p-3 {{ $settings->cloudflare_tunnel_enabled ? 'bg-blue-500/10 border-blue-500/20' : 'bg-amber-500/10 border-amber-500/20' }} border rounded">
+                    <p class="text-xs {{ $settings->cloudflare_tunnel_enabled ? 'text-blue-300' : 'text-amber-300' }} font-medium mb-2">
+                        <strong>{{ $settings->cloudflare_tunnel_enabled ? '✅ ' : '⚠️ ' }}DNS Configuration {{ $settings->cloudflare_tunnel_enabled ? 'Active' : 'Required' }}:</strong>
                     </p>
-                    <p class="text-xs text-blue-200 mb-2">
-                        In your Cloudflare dashboard, add this DNS record:
+                    <p class="text-xs {{ $settings->cloudflare_tunnel_enabled ? 'text-blue-200' : 'text-amber-200' }} mb-2">
+                        In your Cloudflare dashboard, add this DNS record for <strong>{{ $settings->base_domain }}</strong>:
                     </p>
                     <div class="bg-slate-800 p-2 rounded font-mono text-xs">
                         <div class="grid grid-cols-4 gap-2 text-slate-400 mb-1">
@@ -284,14 +284,15 @@
                             <div>Name</div>
                             <div class="col-span-2">Target</div>
                         </div>
-                        <div class="grid grid-cols-4 gap-2 text-blue-300">
+                        <div class="grid grid-cols-4 gap-2 {{ $settings->cloudflare_tunnel_enabled ? 'text-blue-300' : 'text-amber-300' }}">
                             <div>CNAME</div>
-                            <div>{{ $settings->getTunnelHostname() }}</div>
+                            <div>{{ $settings->getDnsRecordName() }}</div>
                             <div class="col-span-2">{{ $settings->cloudflare_tunnel_id }}.cfargotunnel.com</div>
                         </div>
                     </div>
                     <p class="text-xs text-slate-400 mt-2">
-                        Set Proxy status to "Proxied" (orange cloud icon)
+                        • Set Proxy status to "Proxied" (orange cloud icon)<br>
+                        • {{ $settings->getDnsRecordName() === '@' ? 'Using @ means root domain (Cloudflare supports CNAME at root)' : 'This creates a subdomain record' }}
                     </p>
                 </div>
                 @endif
@@ -318,7 +319,9 @@
                     @if($settings->cloudflare_tunnel_token)
                         <p class="mt-1 text-xs text-slate-500">Current credentials are saved (edit to update)</p>
                     @endif
-                    <p class="mt-1 text-xs text-slate-400">💡 HomeDeploy will be accessible at: <strong>deploy.{{ $settings->base_domain ?: 'yourdomain.com' }}</strong></p>
+                    @if($settings->base_domain)
+                        <p class="mt-1 text-xs text-slate-400">💡 HomeDeploy will be accessible at: <strong class="text-indigo-400">{{ $settings->base_domain }}</strong></p>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-between pt-4">
