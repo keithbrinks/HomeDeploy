@@ -197,16 +197,26 @@
                     <h2 class="text-lg font-semibold text-white">Cloudflare Tunnel</h2>
                     <p class="text-sm text-slate-400 mt-1">Expose your server to the internet securely without port forwarding</p>
                 </div>
-                @if($settings->cloudflare_tunnel_enabled)
+                @php
+                    $serviceStatus = $settings->getTunnelServiceStatus();
+                @endphp
+                @if($serviceStatus['status'] === 'running')
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
                         <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
                         Active
                     </span>
+                @elseif($serviceStatus['status'] === 'stopped')
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                        Stopped
+                    </span>
                 @else
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-700 text-slate-300">
-                        Inactive
+                        Not Configured
                     </span>
                 @endif
             </div>
@@ -271,11 +281,11 @@
                 </div>
                 
                 @if($settings->getTunnelHostname())
-                <div class="mt-4 p-3 {{ $settings->cloudflare_tunnel_enabled ? 'bg-blue-500/10 border-blue-500/20' : 'bg-amber-500/10 border-amber-500/20' }} border rounded">
-                    <p class="text-xs {{ $settings->cloudflare_tunnel_enabled ? 'text-blue-300' : 'text-amber-300' }} font-medium mb-2">
-                        <strong>{{ $settings->cloudflare_tunnel_enabled ? '✅ ' : '⚠️ ' }}DNS Configuration {{ $settings->cloudflare_tunnel_enabled ? 'Active' : 'Required' }}:</strong>
+                <div class="mt-4 p-3 {{ $settings->getTunnelServiceStatus()['status'] === 'running' ? 'bg-blue-500/10 border-blue-500/20' : 'bg-amber-500/10 border-amber-500/20' }} border rounded">
+                    <p class="text-xs {{ $settings->getTunnelServiceStatus()['status'] === 'running' ? 'text-blue-300' : 'text-amber-300' }} font-medium mb-2">
+                        <strong>{{ $settings->getTunnelServiceStatus()['status'] === 'running' ? '✅ ' : '⚠️ ' }}DNS Configuration {{ $settings->getTunnelServiceStatus()['status'] === 'running' ? 'Active' : 'Required' }}:</strong>
                     </p>
-                    <p class="text-xs {{ $settings->cloudflare_tunnel_enabled ? 'text-blue-200' : 'text-amber-200' }} mb-2">
+                    <p class="text-xs {{ $settings->getTunnelServiceStatus()['status'] === 'running' ? 'text-blue-200' : 'text-amber-200' }} mb-2">
                         In your Cloudflare dashboard, add this DNS record for <strong>{{ $settings->base_domain }}</strong>:
                     </p>
                     <div class="bg-slate-800 p-2 rounded font-mono text-xs">
@@ -284,7 +294,7 @@
                             <div>Name</div>
                             <div class="col-span-2">Target</div>
                         </div>
-                        <div class="grid grid-cols-4 gap-2 {{ $settings->cloudflare_tunnel_enabled ? 'text-blue-300' : 'text-amber-300' }}">
+                        <div class="grid grid-cols-4 gap-2 {{ $settings->getTunnelServiceStatus()['status'] === 'running' ? 'text-blue-300' : 'text-amber-300' }}">
                             <div>CNAME</div>
                             <div>{{ $settings->getDnsRecordName() }}</div>
                             <div class="col-span-2">{{ $settings->cloudflare_tunnel_id }}.cfargotunnel.com</div>
@@ -295,6 +305,40 @@
                         • {{ $settings->getDnsRecordName() === '@' ? 'Using @ means root domain (Cloudflare supports CNAME at root)' : 'This creates a subdomain record' }}
                     </p>
                 </div>
+                
+                @if($settings->getTunnelServiceStatus()['status'] === 'stopped' && $settings->hasCloudflare())
+                <div class="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded">
+                    <p class="text-sm text-red-300 font-medium mb-2">🔴 Tunnel Service Not Running</p>
+                    <p class="text-xs text-red-200 mb-3">DNS is configured but the tunnel service is not active. This is why your domain isn't working.</p>
+                    
+                    <div class="bg-slate-800 p-3 rounded text-xs mb-3">
+                        <p class="text-slate-300 font-medium mb-2">Quick Fix:</p>
+                        <ol class="list-decimal list-inside space-y-1 text-slate-400">
+                            <li>Click "Start Tunnel" button above</li>
+                            <li>Wait 30 seconds for the service to start</li>
+                            <li>Refresh this page to see the status</li>
+                            <li>Test your domain: <code class="text-indigo-400">https://{{ $settings->base_domain }}</code></li>
+                        </ol>
+                    </div>
+                    
+                    <details class="text-xs">
+                        <summary class="cursor-pointer text-red-300 hover:text-red-200 mb-2">🔧 Advanced Troubleshooting</summary>
+                        <div class="bg-slate-900 p-3 rounded mt-2 space-y-2 text-slate-300">
+                            <p class="font-medium">Check service status:</p>
+                            <code class="block bg-slate-800 p-2 rounded">sudo systemctl status cloudflared-tunnel</code>
+                            
+                            <p class="font-medium mt-3">View logs:</p>
+                            <code class="block bg-slate-800 p-2 rounded">sudo journalctl -u cloudflared-tunnel -n 50</code>
+                            
+                            <p class="font-medium mt-3">Manually start tunnel (for debugging):</p>
+                            <code class="block bg-slate-800 p-2 rounded">sudo cloudflared tunnel --config /etc/cloudflared/config.yml run</code>
+                            
+                            <p class="font-medium mt-3">Check config file:</p>
+                            <code class="block bg-slate-800 p-2 rounded">sudo cat /etc/cloudflared/config.yml</code>
+                        </div>
+                    </details>
+                </div>
+                @endif
                 @endif
             </div>
 

@@ -84,6 +84,28 @@ class Settings extends Model
         // Return the subdomain part (e.g., 'app' from 'app.example.com')
         return $parts[0];
     }
+    
+    public function getTunnelServiceStatus(): array
+    {
+        if (!$this->cloudflare_tunnel_id) {
+            return ['status' => 'not_configured', 'message' => 'Tunnel not configured'];
+        }
+        
+        $result = \Illuminate\Support\Facades\Process::run('sudo systemctl is-active cloudflared-tunnel 2>/dev/null');
+        $isActive = trim($result->output()) === 'active';
+        
+        if (!$isActive) {
+            // Get more details
+            $statusResult = \Illuminate\Support\Facades\Process::run('sudo systemctl status cloudflared-tunnel 2>/dev/null');
+            return [
+                'status' => 'stopped',
+                'message' => 'Service is not running',
+                'details' => $statusResult->output()
+            ];
+        }
+        
+        return ['status' => 'running', 'message' => 'Service is active'];
+    }
 
     public function getServerIp(): ?string
     {
