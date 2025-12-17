@@ -32,13 +32,22 @@ class CloudflareTunnelController extends Controller
         }
 
         try {
+            // Check if cloudflared is installed
+            $whichResult = Process::run('which cloudflared');
+            if ($whichResult->failed() || empty(trim($whichResult->output()))) {
+                throw new \RuntimeException('cloudflared is not installed. Please install it first: wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && sudo dpkg -i cloudflared-linux-amd64.deb');
+            }
+            
+            $cloudflaredPath = trim($whichResult->output());
+            \Illuminate\Support\Facades\Log::info('Found cloudflared at: ' . $cloudflaredPath);
+            
             // Generate config file
             \Illuminate\Support\Facades\Log::info('Starting Cloudflare Tunnel setup...');
             $this->generateConfig($settings);
             \Illuminate\Support\Facades\Log::info('Config file generated successfully');
             
             // Create systemd service if it doesn't exist
-            $this->createSystemdService();
+            $this->createSystemdService($cloudflaredPath);
             \Illuminate\Support\Facades\Log::info('Systemd service created successfully');
             
             // Start the service
@@ -182,9 +191,9 @@ YAML;
         \Illuminate\Support\Facades\Log::info('Config file created at ' . $configPath);
     }
     
-    private function createSystemdService(): void
+    private function createSystemdService(string $cloudflaredPath = '/usr/local/bin/cloudflared'): void
     {
-        $serviceContent = <<<'SERVICE'
+        $serviceContent = <<<SERVICE
 [Unit]
 Description=Cloudflare Tunnel
 After=network.target
@@ -192,7 +201,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/local/bin/cloudflared tunnel --config /etc/cloudflared/config.yml run
+ExecStart={$cloudflaredPath} tunnel --config /etc/cloudflared/config.yml run
 Restart=always
 RestartSec=5
 
