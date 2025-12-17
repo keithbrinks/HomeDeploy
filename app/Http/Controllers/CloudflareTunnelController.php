@@ -65,9 +65,19 @@ class CloudflareTunnelController extends Controller
             Process::run('sudo systemctl enable cloudflared-tunnel');
             
             // Verify service is actually running
-            sleep(2); // Give it a moment to start
-            $statusResult = Process::run('sudo systemctl is-active cloudflared-tunnel');
-            $isRunning = trim($statusResult->output()) === 'active';
+            // Wait a bit longer for the service to fully start
+            sleep(3);
+            
+            // Check multiple times since service might take a moment
+            $isRunning = false;
+            for ($i = 0; $i < 5; $i++) {
+                $statusResult = Process::run('sudo systemctl is-active cloudflared-tunnel');
+                if (trim($statusResult->output()) === 'active') {
+                    $isRunning = true;
+                    break;
+                }
+                sleep(1);
+            }
             
             // Update settings
             $settings->update(['cloudflare_tunnel_enabled' => $isRunning]);
@@ -75,10 +85,25 @@ class CloudflareTunnelController extends Controller
             if (!$isRunning) {
                 // Get detailed status for error message
                 $statusDetails = Process::run('sudo systemctl status cloudflared-tunnel');
-                \Illuminate\Support\Facades\Log::error('Tunnel service not running after start', [
+                \Illuminate\Support\Facades\Log::warning('Tunnel service status unclear after start', [
                     'status' => $statusDetails->output()
                 ]);
-                throw new \RuntimeException('Tunnel service failed to start. Check logs: sudo journalctl -u cloudflared-tunnel -n 50');
+                
+                // Check if it's actually running by looking at the journal
+                $journalResult = Process::run('sudo journalctl -u cloudflared-tunnel -n 5 --no-pager');
+                $journalOutput = $journalResult->output();
+                
+                // If we see "Registered tunnel connection" in recent logs, it's working
+                if (strpos($journalOutput, 'Registered tunnel connection') !== false) {
+                    \Illuminate\Support\Facades\Log::info('Tunnel is running based on journal logs');
+                    $settings->update(['cloudflare_tunnel_enabled' => true]);
+                    
+                    return redirect()
+                        ->route('settings.index')
+                        ->with('success', 'Cloudflare Tunnel started successfully! The tunnel is connecting to Cloudflare. Configure DNS: CNAME ' . $settings->getTunnelHostname() . ' to ' . $settings->cloudflare_tunnel_id . '.cfargotunnel.com');
+                }
+                
+                throw new \RuntimeException('Tunnel service status unclear. Check logs: sudo journalctl -u cloudflared-tunnel -n 50');
             }
             
             return redirect()
