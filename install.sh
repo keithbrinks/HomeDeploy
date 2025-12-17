@@ -191,11 +191,8 @@ systemctl restart homedeploy-queue
 # Configure Nginx
 echo -e "${BLUE}Configuring Nginx...${NC}"
 
-# Prompt for domain/hostname
-read -p "Enter domain for HomeDeploy (press Enter for server's hostname): " HOMEDEPLOY_DOMAIN
-if [ -z "$HOMEDEPLOY_DOMAIN" ]; then
-    HOMEDEPLOY_DOMAIN=$(hostname -f 2>/dev/null || hostname)
-fi
+# Use hostname as default domain (can be changed later in settings)
+HOMEDEPLOY_DOMAIN=$(hostname -f 2>/dev/null || hostname)
 
 cat > /etc/nginx/sites-available/homedeploy <<EOF
 server {
