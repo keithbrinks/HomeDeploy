@@ -23,68 +23,49 @@ class RunDeploymentAction
             $site = $deployment->site;
             $path = $site->deploy_path;
             $gitDir = $path . '/.git';
-            $skipClone = false;
 
             // Check if it's a git repository
             if (! is_dir($gitDir)) {
                 // First-time deployment - need to clone
                 $this->log($deployment, "First deployment - cloning repository...");
                 
-                // Ensure directory exists
-                if (! is_dir($path)) {
-                    $this->log($deployment, "Creating directory: $path");
-                    
-                    $mkdirResult = Process::run("sudo mkdir -p '$path'");
-                    if ($mkdirResult->failed()) {
-                        throw new \RuntimeException("Failed to create directory: " . $mkdirResult->errorOutput());
-                    }
-                } else {
-                    // Directory exists but is not a git repo - remove and recreate it
-                    $this->log($deployment, "Directory exists but is not a git repository. Recreating...");
-                    
-                    // Backup .env if it exists
-                    $envBackup = null;
-                    $envPath = $path . '/.env';
-                    if (file_exists($envPath)) {
-                        $this->log($deployment, "Backing up existing .env file...");
-                        $envBackup = file_get_contents($envPath);
-                    }
-                    
+                // Backup .env if it exists (for re-deployments where git was corrupted)
+                $envBackup = null;
+                $envPath = $path . '/.env';
+                if (file_exists($envPath)) {
+                    $this->log($deployment, "Backing up existing .env file...");
+                    $envBackup = file_get_contents($envPath);
+                }
+                
+                // Ensure clean directory
+                if (is_dir($path)) {
+                    // Directory exists but is not a git repo - remove it
+                    $this->log($deployment, "Removing non-git directory...");
                     $removeResult = Process::run("sudo rm -rf '$path'");
                     if ($removeResult->failed()) {
                         throw new \RuntimeException("Failed to remove directory: " . $removeResult->errorOutput());
                     }
-                    
-                    $mkdirResult = Process::run("sudo mkdir -p '$path'");
-                    if ($mkdirResult->failed()) {
-                        throw new \RuntimeException("Failed to recreate directory: " . $mkdirResult->errorOutput());
-                    }
-                    
-                    // Clone first, then restore .env
-                    $cloneUrl = $this->getAuthenticatedRepoUrl($site->repo_url);
-                    $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
-                    
-                    // Restore .env if we had one
-                    if ($envBackup) {
-                        $this->log($deployment, "Restoring .env file...");
-                        file_put_contents($envPath, $envBackup);
-                        Process::run("sudo chown www-data:www-data '$envPath'");
-                    }
-                    
-                    // Skip the normal clone below since we just did it
-                    $skipClone = true;
                 }
                 
-                // Set ownership to www-data
-                $chownResult = Process::run("sudo chown -R www-data:www-data '$path'");
-                if ($chownResult->failed()) {
-                    throw new \RuntimeException("Failed to set ownership: " . $chownResult->errorOutput());
+                // Create fresh directory
+                $this->log($deployment, "Creating directory: $path");
+                $mkdirResult = Process::run("sudo mkdir -p '$path'");
+                if ($mkdirResult->failed()) {
+                    throw new \RuntimeException("Failed to create directory: " . $mkdirResult->errorOutput());
                 }
                 
-                // Clone with GitHub token for private repos (unless we already cloned above)
-                if (!$skipClone) {
-                    $cloneUrl = $this->getAuthenticatedRepoUrl($site->repo_url);
-                    $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
+                // Set ownership
+                Process::run("sudo chown -R www-data:www-data '$path'");
+                
+                // Clone repository
+                $cloneUrl = $this->getAuthenticatedRepoUrl($site->repo_url);
+                $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
+                
+                // Restore .env if we had one
+                if ($envBackup) {
+                    $this->log($deployment, "Restoring .env file...");
+                    file_put_contents($envPath, $envBackup);
+                    Process::run("sudo chown www-data:www-data '$envPath'");
                 }
             } else {
                 // Subsequent deployment - pull updates
