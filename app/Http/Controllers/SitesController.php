@@ -111,29 +111,34 @@ class SitesController extends Controller
     public function updateDomain(Request $request, Site $site): RedirectResponse
     {
         $validated = $request->validate([
-            'domain_strategy' => 'required|in:subdomain,custom',
-            'custom_domain' => 'nullable|string',
+            'subdomain' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?$/',
+            ],
         ]);
 
         $settings = \App\Models\Settings::get();
         
-        // Calculate new domain based on strategy
-        $newDomain = $settings->getSiteDomain(
-            $site->name,
-            $validated['domain_strategy'],
-            $validated['custom_domain'] ?? null
-        );
+        if (!$settings->base_domain) {
+            return redirect()->route('sites.show', $site)
+                ->with('error', 'Please configure a base domain in Settings first.');
+        }
+        
+        // Build full domain from subdomain prefix + base domain
+        $fullDomain = $validated['subdomain'] . '.' . $settings->base_domain;
 
         // Update site
         $site->update([
-            'domain_strategy' => $validated['domain_strategy'],
-            'domain' => $newDomain,
+            'domain_strategy' => 'subdomain',
+            'domain' => $fullDomain,
         ]);
 
         // Regenerate Nginx config with new domain
         $generateNginxAction = app(\App\Domains\Server\Actions\GenerateNginxConfigAction::class);
         $generateNginxAction->execute($site);
 
-        return redirect()->route('sites.show', $site)->with('success', 'Domain configuration updated! Nginx config regenerated.');
+        return redirect()->route('sites.show', $site)->with('success', 'Domain updated! Nginx config regenerated.');
     }
 }

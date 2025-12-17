@@ -233,16 +233,8 @@
             <!-- Domain Configuration -->
             <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden" x-data="{ 
                 editing: false,
-                strategy: '{{ $site->domain_strategy ?? 'subdomain' }}',
-                customDomain: '{{ $site->domain ?? '' }}',
-                defaultDomain: '{{ app(\App\Models\Settings::class)->first()?->base_domain ?? '' }}',
-                get preview() {
-                    switch(this.strategy) {
-                        case 'subdomain': return 'http://{{ $site->name }}.' + this.defaultDomain;
-                        case 'custom': return 'http://' + this.customDomain;
-                        default: return '';
-                    }
-                }
+                subdomain: '{{ str_replace("." . (app(\App\Models\Settings::class)->first()?->base_domain ?? ""), "", $site->domain ?? "") }}',
+                baseDomain: '{{ app(\App\Models\Settings::class)->first()?->base_domain ?? "keithbrinks.app" }}'
             }">
                 <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
                     <h3 class="text-lg font-medium text-white">Domain</h3>
@@ -258,7 +250,6 @@
                             {{ $site->getFullDomain() }}
                             <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                         </a>
-                        <p class="text-xs text-slate-500 mt-2">Strategy: <span class="capitalize">{{ $site->domain_strategy ?? 'subdomain' }}</span></p>
                     </div>
                 </div>
 
@@ -267,39 +258,26 @@
                         @csrf
                         @method('PUT')
                         
-                        <div class="space-y-3">
-                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
-                                <input type="radio" name="domain_strategy" value="subdomain" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
-                                <span class="ml-3 flex-1">
-                                    <span class="block text-sm font-medium text-white">Subdomain (Recommended)</span>
-                                    <span class="block text-xs text-slate-400 mt-0.5">Use sitename.yourdomain.com pattern</span>
-                                </span>
-                            </label>
-
-                            <label class="flex items-center p-3 bg-slate-900 rounded border border-slate-700 cursor-pointer hover:border-indigo-500 transition-colors">
-                                <input type="radio" name="domain_strategy" value="custom" x-model="strategy" class="text-indigo-600 focus:ring-indigo-500">
-                                <span class="ml-3 flex-1">
-                                    <span class="block text-sm font-medium text-white">Custom Domain</span>
-                                    <span class="block text-xs text-slate-400 mt-0.5">Use your own domain (configure DNS to point to server)</span>
-                                </span>
-                            </label>
-
-                            <div x-show="strategy === 'custom'" class="pl-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Subdomain</label>
+                            <div class="flex rounded-md shadow-sm">
                                 <input type="text" 
-                                       name="custom_domain" 
-                                       x-model="customDomain"
-                                       placeholder="example.com"
-                                       class="block w-full rounded-md bg-slate-900 border-slate-700 text-white text-sm placeholder-slate-400">
+                                       name="subdomain" 
+                                       x-model="subdomain"
+                                       required
+                                       placeholder="my"
+                                       class="block w-full rounded-l-md bg-slate-900 border-slate-700 text-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-700 bg-slate-800 text-slate-400 sm:text-sm" x-text="'.' + baseDomain"></span>
                             </div>
                         </div>
 
                         <div class="bg-indigo-500/10 border border-indigo-500/20 rounded p-3">
-                            <p class="text-xs font-medium text-indigo-400 mb-1">Preview:</p>
-                            <p class="text-sm font-mono text-white" x-text="preview"></p>
+                            <p class="text-xs font-medium text-indigo-400 mb-1">New URL:</p>
+                            <p class="text-sm font-mono text-white">http://<span x-text="subdomain + '.' + baseDomain"></span></p>
                         </div>
 
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium">
-                            Update Domain Configuration
+                            Update Domain
                         </button>
                     </form>
                 </div>
