@@ -30,11 +30,13 @@ class RunDeploymentAction
                 $this->log($deployment, "First deployment - cloning repository...");
                 
                 // Backup .env if it exists (for re-deployments where git was corrupted)
-                $envBackup = null;
                 $envPath = $path . '/.env';
+                $envBackupPath = storage_path("app/env-backup-{$site->id}.tmp");
+                
                 if (file_exists($envPath)) {
                     $this->log($deployment, "Backing up existing .env file...");
-                    $envBackup = file_get_contents($envPath);
+                    // Copy to temp storage location outside the directory
+                    copy($envPath, $envBackupPath);
                 }
                 
                 // Ensure clean directory
@@ -44,6 +46,11 @@ class RunDeploymentAction
                     $removeResult = Process::run("sudo rm -rf '$path'");
                     if ($removeResult->failed()) {
                         throw new \RuntimeException("Failed to remove directory: " . $removeResult->errorOutput());
+                    }
+                    
+                    // Verify it's actually gone
+                    if (is_dir($path)) {
+                        throw new \RuntimeException("Directory still exists after removal attempt. Please manually remove: $path");
                     }
                 }
                 
@@ -62,10 +69,11 @@ class RunDeploymentAction
                 $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
                 
                 // Restore .env if we had one
-                if ($envBackup) {
+                if (file_exists($envBackupPath)) {
                     $this->log($deployment, "Restoring .env file...");
-                    file_put_contents($envPath, $envBackup);
+                    copy($envBackupPath, $envPath);
                     Process::run("sudo chown www-data:www-data '$envPath'");
+                    unlink($envBackupPath); // Clean up temp file
                 }
             } else {
                 // Subsequent deployment - pull updates
