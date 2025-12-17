@@ -11,28 +11,23 @@ class DropDatabaseAction
 {
     public function execute(string $databaseName, string $username): void
     {
-        $rootPassword = $this->getMysqlRootPassword();
-        
-        if (!$rootPassword) {
-            throw new \RuntimeException("MySQL root password not found. Check /root/mysql-root-credentials.txt or set MYSQL_ROOT_PASSWORD environment variable.");
-        }
-        
         try {
+            // Use sudo mysql (works with auth_socket) - no password needed
             // Drop user
-            $dropUser = Process::run("sudo mysql -u root -p'{$rootPassword}' -e \"DROP USER IF EXISTS '{$username}'@'localhost';\"");
+            $dropUser = Process::run("sudo mysql -e \"DROP USER IF EXISTS '{$username}'@'localhost';\"");
             
             if ($dropUser->failed()) {
                 throw new \RuntimeException("Failed to drop user: " . $dropUser->errorOutput());
             }
 
             // Drop database
-            $dropDb = Process::run("sudo mysql -u root -p'{$rootPassword}' -e \"DROP DATABASE IF EXISTS {$databaseName};\"");
+            $dropDb = Process::run("sudo mysql -e \"DROP DATABASE IF EXISTS {$databaseName};\"");
             
             if ($dropDb->failed()) {
                 throw new \RuntimeException("Failed to drop database: " . $dropDb->errorOutput());
             }
 
-            Process::run("sudo mysql -u root -p'{$rootPassword}' -e \"FLUSH PRIVILEGES;\"");
+            Process::run("sudo mysql -e \"FLUSH PRIVILEGES;\"");
         } catch (ProcessFailedException $e) {
             throw new \RuntimeException("Process failed: " . $e->getMessage());
         }
