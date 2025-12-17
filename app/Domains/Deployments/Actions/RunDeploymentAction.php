@@ -80,12 +80,12 @@ class RunDeploymentAction
                 if ($chownResult->failed()) {
                     throw new \RuntimeException("Failed to set ownership: " . $chownResult->errorOutput());
                 }
-                 (unless we already cloned above)
+                
+                // Clone with GitHub token for private repos (unless we already cloned above)
                 if (!$skipClone) {
                     $cloneUrl = $this->getAuthenticatedRepoUrl($site->repo_url);
                     $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
                 }
-                $this->runCommand($deployment, "git clone -b {$site->branch} {$cloneUrl} .", $path);
             } else {
                 // Subsequent deployment - pull updates
                 $this->log($deployment, "Updating existing repository...");
