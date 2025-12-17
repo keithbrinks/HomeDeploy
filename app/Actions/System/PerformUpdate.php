@@ -83,6 +83,10 @@ class PerformUpdate
             Process::path($basePath)->env(['HOME' => $basePath])->run('php artisan optimize:clear');
             Process::path($basePath)->env(['HOME' => $basePath])->run('php artisan optimize');
             
+            // Restart services to pick up new code
+            Process::run('sudo systemctl restart php8.2-fpm');
+            Process::run('sudo systemctl restart homedeploy-queue');
+            
             $newCommit = trim(Process::path($basePath)->run('git rev-parse HEAD')->output());
             
             Log::info('System updated successfully', [
