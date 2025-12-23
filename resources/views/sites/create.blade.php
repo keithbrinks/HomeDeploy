@@ -155,16 +155,17 @@
                             <option :value="branch.name" x-text="branch.name"></option>
                         </template>
                     </select>
-                </  </label>
-                </div>
+                </template>
+                <template x-if="branches.length === 0">
+                    <input type="text" name="branch" id="branch" x-ref="branchInput" value="main" placeholder="main or master" class="mt-1 block w-full rounded-md bg-slate-800 border-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                </template>
+                <p class="text-xs text-slate-500 mt-1" x-show="loadingBranches">Loading branches...</p>
+            </div>
 
-                <div class="mt-4 p-3 bg-slate-800 rounded-md border border-slate-700">
-                    <p class="text-xs font-medium text-slate-400 mb-1">Site will be accessible at:</p>
-                    <p class="text-sm font-mono text-white" x-text="
-                        strategy === 'subdomain' ? `${siteName}.{{ $settings->base_domain ?: 'domain.com' }}` :
-                        strategy === 'custom' ? (customDomain || 'Enter custom domain') : ''
-                    "></p>
-                </div>
+            <div>
+                <label for="deploy_path" class="block text-sm font-medium text-slate-300">Deploy Path</label>
+                <input type="text" name="deploy_path" id="deploy_path" x-ref="deployPathInput" value="/var/www/html" required placeholder="/var/www/html" class="mt-1 block w-full rounded-md bg-slate-800 border-slate-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <p class="text-xs text-slate-500 mt-1">Server path where the site will be deployed</p>
             </div>
 
             <div class="flex justify-end">
